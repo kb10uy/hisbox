@@ -15,6 +15,9 @@ pub enum AdiError {
 
     #[error("tag error at index {0}: {1}")]
     Tag(usize, TagError),
+
+    #[error("field value too short; expected {expected}, max {maximum}")]
+    ValueTooShort { expected: usize, maximum: usize },
 }
 
 #[derive(Debug, ThisError, PartialEq, Eq)]
@@ -24,7 +27,4 @@ pub enum TagError {
 
     #[error("invalid length: {0}")]
     ParseInt(#[from] ParseIntError),
-
-    #[error("value too short; expected {expected}, max {maximum}")]
-    ValueTooShort { expected: usize, maximum: usize },
 }

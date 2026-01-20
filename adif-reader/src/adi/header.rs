@@ -1,53 +1,76 @@
-use std::{collections::HashMap, sync::LazyLock};
+use std::collections::HashMap;
 
-use regex::{Regex, RegexBuilder};
-
-use crate::adi::{error::AdiError, field::parse_field};
-
-static RE_EOR: LazyLock<Regex> = LazyLock::new(|| {
-    RegexBuilder::new(r#"^[^<]*<EOH>"#)
-        .case_insensitive(true)
-        .build()
-        .expect("regex error")
-});
+use crate::adi::{
+    data::{FieldName, ToFieldName, get_field_value},
+    error::AdiError,
+    tag::Tag,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header<'a> {
-    pub preamble: &'a str,
-    pub fields: HashMap<&'a str, &'a str>,
+    preamble: &'a str,
+    fields: HashMap<FieldName<'a>, &'a str>,
 }
 
-pub fn parse_header<'a>(text: &'a str) -> Result<(Option<Header<'a>>, usize), AdiError> {
-    // > If the first character in an ADI file is <, it contains no Header.
-    // https://adif.org.uk/316/ADIF_316.htm#ADI_File_Format
-    let header_start = match text.find("<") {
-        Some(0) => return Ok((None, 0)),
-        Some(n) => n,
-        None => return Err(AdiError::NoData),
-    };
-    let preamble = &text[..header_start];
-
-    let mut fields = HashMap::new();
-    let mut consumed = header_start;
-    let eor_consumed = loop {
-        if let Some(eor) = RE_EOR.captures(&text[consumed..]) {
-            break eor.get(0).expect("must capture").end();
-        }
-        let (field, field_consumed) = match parse_field(&text[consumed..]) {
-            Ok(f) => f,
-            Err(e) => return Err(AdiError::Tag(consumed, e)),
+impl<'a> Header<'a> {
+    pub fn parse(text: &'a str) -> Result<(Option<Header<'a>>, usize), AdiError> {
+        // > If the first character in an ADI file is <, it contains no Header.
+        // https://adif.org.uk/316/ADIF_316.htm#ADI_File_Format
+        let header_start = match text.find("<") {
+            Some(0) => return Ok((None, 0)),
+            Some(n) => n,
+            None => return Err(AdiError::NoData),
         };
-        fields.insert(field.name, field.value);
-        consumed += field_consumed;
-    };
-    consumed += eor_consumed;
+        let preamble = &text[..header_start];
 
-    Ok((Some(Header { preamble, fields }), consumed))
+        let mut fields = HashMap::new();
+        let mut consumed = header_start;
+        loop {
+            match Tag::parse(&text[consumed..]) {
+                Ok((
+                    Tag::Specifier {
+                        name, value_length, ..
+                    },
+                    c,
+                )) => {
+                    consumed += c;
+                    let value = get_field_value(&text[consumed..], value_length).ok_or(
+                        AdiError::ValueTooShort {
+                            expected: value_length,
+                            maximum: text.len() - consumed,
+                        },
+                    )?;
+                    fields.insert(FieldName::new(name), value);
+                    consumed += value_length;
+                }
+                Ok((Tag::EndOfHeader, c)) => {
+                    consumed += c;
+                    break;
+                }
+
+                Ok(_) => return Err(AdiError::NoEoh),
+                Err(e) => return Err(AdiError::Tag(consumed, e)),
+            }
+        }
+
+        Ok((Some(Header { preamble, fields }), consumed))
+    }
+
+    pub fn preamble(&self) -> &'a str {
+        self.preamble
+    }
+
+    pub fn field<F: ToFieldName<'a>>(&self, f: F) -> Option<&str> {
+        let field_name = f.to_field_name();
+        self.fields.get(&field_name).copied()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Header, parse_header};
+    use crate::adi::data::ToFieldName;
+
+    use super::Header;
 
     #[test]
     fn parses_header() {
@@ -56,14 +79,14 @@ mod tests {
         let expected = Header {
             preamble: "Fixture ADI File\n",
             fields: vec![
-                ("ADIF_VER", "3.1.6"),
-                ("CREATED_TIMESTAMP", "20260120 000000"),
-                ("PROGRAMID", "jelgen"),
-                ("PROGRAMVERSION", "0.1.0"),
+                ("ADIF_VER".to_field_name(), "3.1.6"),
+                ("CREATED_TIMESTAMP".to_field_name(), "20260120 000000"),
+                ("PROGRAMID".to_field_name(), "jelgen"),
+                ("PROGRAMVERSION".to_field_name(), "0.1.0"),
             ]
             .into_iter()
             .collect(),
         };
-        assert_eq!(parse_header(adi_text), Ok((Some(expected), 122)));
+        assert_eq!(Header::parse(adi_text), Ok((Some(expected), 122)));
     }
 }
