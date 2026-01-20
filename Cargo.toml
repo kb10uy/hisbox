@@ -1,0 +1,14 @@
+[workspace]
+members = ["jelgen", "adif-reader"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
+
+[workspace.dependencies]
+adif-reader = { path = "./adif-reader" }
+
+regex = "1.12.2"
+thiserror = "2.0.18"
