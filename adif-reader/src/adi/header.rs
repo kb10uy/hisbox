@@ -1,15 +1,14 @@
 use std::collections::HashMap;
 
-use crate::adi::{
-    data::{FieldName, ToFieldName, get_field_value},
-    error::AdiError,
-    tag::Tag,
+use crate::{
+    adi::{data::get_field_value, error::AdiError, tag::Tag},
+    document::FieldName,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header<'a> {
-    preamble: &'a str,
-    fields: HashMap<FieldName<'a>, &'a str>,
+    pub preamble: &'a str,
+    pub fields: HashMap<FieldName<'a>, &'a str>,
 }
 
 impl<'a> Header<'a> {
@@ -55,20 +54,11 @@ impl<'a> Header<'a> {
 
         Ok((Some(Header { preamble, fields }), consumed))
     }
-
-    pub fn preamble(&self) -> &'a str {
-        self.preamble
-    }
-
-    pub fn field<F: ToFieldName<'a>>(&self, f: F) -> Option<&str> {
-        let field_name = f.to_field_name();
-        self.fields.get(&field_name).copied()
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::adi::data::ToFieldName;
+    use crate::document::ToFieldName;
 
     use super::Header;
 

@@ -48,6 +48,10 @@ impl<'a> Tag<'a> {
             tag_end,
         ))
     }
+
+    pub fn has_next(text: &str) -> bool {
+        RE_FIELD_TAG.is_match(text)
+    }
 }
 
 #[cfg(test)]

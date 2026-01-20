@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 
-use crate::adi::{
-    data::{FieldName, get_field_value},
-    error::AdiError,
-    tag::Tag,
+use crate::{
+    adi::{data::get_field_value, error::AdiError, tag::Tag},
+    document::FieldName,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Record<'a> {
-    fields: HashMap<FieldName<'a>, &'a str>,
+    pub fields: HashMap<FieldName<'a>, &'a str>,
 }
 
 impl<'a> Record<'a> {
@@ -49,7 +48,7 @@ impl<'a> Record<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::adi::data::ToFieldName;
+    use crate::document::ToFieldName;
 
     use super::Record;
 
