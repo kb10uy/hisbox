@@ -4,7 +4,7 @@ mod header;
 mod record;
 mod tag;
 
-use crate::adi::{header::Header, record::Record, tag::Tag};
+use crate::format::adi::{header::Header, record::Record, tag::Tag};
 
 pub use error::{AdiError, TagError};
 

@@ -18,12 +18,6 @@ impl<'a> FieldName<'a> {
     }
 }
 
-impl<'a> ToString for FieldName<'a> {
-    fn to_string(&self) -> String {
-        self.0.to_string()
-    }
-}
-
 pub trait ToFieldName<'a> {
     fn to_field_name(self) -> FieldName<'a>;
 }

@@ -1,14 +1,11 @@
 use std::collections::HashMap;
 
-use crate::{
-    adi::{data::get_field_value, error::AdiError, tag::Tag},
-    document::FieldName,
-};
+use crate::format::adi::{data::get_field_value, error::AdiError, tag::Tag};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header<'a> {
     pub preamble: &'a str,
-    pub fields: HashMap<FieldName<'a>, &'a str>,
+    pub fields: HashMap<&'a str, &'a str>,
 }
 
 impl<'a> Header<'a> {
@@ -39,7 +36,7 @@ impl<'a> Header<'a> {
                             maximum: text.len() - consumed,
                         },
                     )?;
-                    fields.insert(FieldName::new(name), value);
+                    fields.insert(name, value);
                     consumed += value_length;
                 }
                 Ok((Tag::EndOfHeader, c)) => {
@@ -58,21 +55,19 @@ impl<'a> Header<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::document::ToFieldName;
-
     use super::Header;
 
     #[test]
     fn parses_header() {
-        let adi_text = include_str!("../../fixtures/basic-header.adi");
+        let adi_text = include_str!("../../../fixtures/basic-header.adi");
 
         let expected = Header {
             preamble: "Fixture ADI File\n",
             fields: vec![
-                ("ADIF_VER".to_field_name(), "3.1.6"),
-                ("CREATED_TIMESTAMP".to_field_name(), "20260120 000000"),
-                ("PROGRAMID".to_field_name(), "jelgen"),
-                ("PROGRAMVERSION".to_field_name(), "0.1.0"),
+                ("ADIF_VER", "3.1.6"),
+                ("CREATED_TIMESTAMP", "20260120 000000"),
+                ("PROGRAMID", "jelgen"),
+                ("PROGRAMVERSION", "0.1.0"),
             ]
             .into_iter()
             .collect(),

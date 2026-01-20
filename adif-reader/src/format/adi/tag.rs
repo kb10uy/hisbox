@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use regex::{Regex, RegexBuilder};
 
-use crate::adi::error::TagError;
+use crate::format::adi::error::TagError;
 
 static RE_FIELD_TAG: LazyLock<Regex> = LazyLock::new(|| {
     RegexBuilder::new(r#"<((EOH)|(EOR)|([^,:<>\{\}]+):(\d+)(:([A-Z]+))?)>"#)

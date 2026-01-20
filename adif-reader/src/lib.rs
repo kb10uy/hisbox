@@ -1,3 +1,3 @@
-pub mod adi;
 pub mod document;
 pub mod error;
+pub mod format;

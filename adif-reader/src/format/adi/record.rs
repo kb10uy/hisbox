@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    adi::{data::get_field_value, error::AdiError, tag::Tag},
+    format::adi::{data::get_field_value, error::AdiError, tag::Tag},
     document::FieldName,
 };
 

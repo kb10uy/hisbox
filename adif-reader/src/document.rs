@@ -1,5 +1,12 @@
-mod document;
 mod field_name;
 
-pub use document::AdifDocument;
+use std::collections::HashMap;
+
 pub use field_name::{FieldName, ToFieldName};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AdifDocument {
+    preamble: String,
+    headers: HashMap<String, String>,
+    records: Vec<HashMap<String, String>>,
+}
