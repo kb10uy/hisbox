@@ -13,9 +13,9 @@ static RE_FIELD_TAG: LazyLock<Regex> = LazyLock::new(|| {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Field<'a> {
-    name: &'a str,
-    type_indicator: Option<&'a str>,
-    value: &'a str,
+    pub name: &'a str,
+    pub type_indicator: Option<&'a str>,
+    pub value: &'a str,
 }
 
 pub fn parse_field<'a>(text: &'a str) -> Result<(Field<'a>, usize), TagError> {
