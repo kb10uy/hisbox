@@ -5,13 +5,13 @@ use regex::{Regex, RegexBuilder};
 use crate::adi::{error::AdiError, field::parse_field};
 
 static RE_EOR: LazyLock<Regex> = LazyLock::new(|| {
-    RegexBuilder::new(r#"<EOR>"#)
+    RegexBuilder::new(r#"^[^<]*<EOH>"#)
         .case_insensitive(true)
         .build()
         .expect("regex error")
 });
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header<'a> {
     pub preamble: &'a str,
     pub fields: HashMap<&'a str, &'a str>,
@@ -47,7 +47,23 @@ pub fn parse_header<'a>(text: &'a str) -> Result<(Option<Header<'a>>, usize), Ad
 
 #[cfg(test)]
 mod tests {
+    use super::{Header, parse_header};
+
+    #[test]
     fn parses_header() {
-        let adi = include_str!("../../fixtures/basic-header.adi");
+        let adi_text = include_str!("../../fixtures/basic-header.adi");
+
+        let expected = Header {
+            preamble: "Fixture ADI File\n",
+            fields: vec![
+                ("ADIF_VER", "3.1.6"),
+                ("CREATED_TIMESTAMP", "20260120 000000"),
+                ("PROGRAMID", "jelgen"),
+                ("PROGRAMVERSION", "0.1.0"),
+            ]
+            .into_iter()
+            .collect(),
+        };
+        assert_eq!(parse_header(adi_text), Ok((Some(expected), 122)));
     }
 }

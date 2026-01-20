@@ -5,7 +5,7 @@ use regex::{Regex, RegexBuilder};
 use crate::adi::error::TagError;
 
 static RE_FIELD_TAG: LazyLock<Regex> = LazyLock::new(|| {
-    RegexBuilder::new(r#"<([^,:<>\{\}]+):(\d+)(:([A-Z]+))?>"#)
+    RegexBuilder::new(r#"<(EOH|EOR|([^,:<>\{\}]+):(\d+)(:([A-Z]+))?)>"#)
         .case_insensitive(true)
         .build()
         .expect("regex error")
@@ -20,7 +20,7 @@ pub struct Field<'a> {
 
 pub fn parse_field<'a>(text: &'a str) -> Result<(Field<'a>, usize), TagError> {
     let Some(tag_match) = RE_FIELD_TAG.captures(text) else {
-        return Err(TagError::NoValidTag);
+        return Err(TagError::NotValidTag);
     };
     let tag_end = tag_match.get(0).expect("must capture").end();
     let field_name = tag_match.get(1).expect("capture must exist");
@@ -79,10 +79,10 @@ mod tests {
 
     #[test]
     fn fails_on_tag_errors() {
-        assert_eq!(parse_field("CALL"), Err(TagError::NoValidTag));
-        assert_eq!(parse_field("<CALL:"), Err(TagError::NoValidTag));
-        assert_eq!(parse_field("<CALL>"), Err(TagError::NoValidTag));
-        assert_eq!(parse_field("<CALL:6:S:X>JL1HIS"), Err(TagError::NoValidTag));
+        assert_eq!(parse_field("CALL"), Err(TagError::NotValidTag));
+        assert_eq!(parse_field("<CALL:"), Err(TagError::NotValidTag));
+        assert_eq!(parse_field("<CALL>"), Err(TagError::NotValidTag));
+        assert_eq!(parse_field("<CALL:6:S:X>JL1HIS"), Err(TagError::NotValidTag));
         assert_eq!(
             parse_field("<CALL:6>JL1HI"),
             Err(TagError::ValueTooShort {

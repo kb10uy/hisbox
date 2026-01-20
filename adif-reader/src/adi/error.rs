@@ -20,7 +20,7 @@ pub enum AdiError {
 #[derive(Debug, ThisError, PartialEq, Eq)]
 pub enum TagError {
     #[error("no valid tag found")]
-    NoValidTag,
+    NotValidTag,
 
     #[error("invalid length: {0}")]
     ParseInt(#[from] ParseIntError),
