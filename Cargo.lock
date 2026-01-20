@@ -7,6 +7,7 @@ name = "adif-reader"
 version = "0.1.0"
 dependencies = [
  "regex",
+ "roxmltree",
  "thiserror",
 ]
 
@@ -75,6 +76,15 @@ name = "regex-syntax"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
+
+[[package]]
+name = "roxmltree"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1964b10c76125c36f8afe190065a4bf9a87bf324842c05701330bba9f1cacbb"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "syn"

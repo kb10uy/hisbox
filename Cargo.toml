@@ -11,4 +11,5 @@ authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
 adif-reader = { path = "./adif-reader" }
 
 regex = "1.12.2"
+roxmltree = "0.21.1"
 thiserror = "2.0.18"

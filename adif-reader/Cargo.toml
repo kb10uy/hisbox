@@ -7,4 +7,5 @@ authors.workspace = true
 
 [dependencies]
 regex = { workspace = true }
+roxmltree = { workspace = true }
 thiserror = { workspace = true }
