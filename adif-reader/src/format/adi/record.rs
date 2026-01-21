@@ -1,8 +1,12 @@
 use std::collections::HashMap;
 
 use crate::{
-    format::adi::{data::get_field_value, error::AdiError, tag::Tag},
     document::FieldName,
+    format::adi::{
+        data::{FieldValue, LengthMode, get_field_value},
+        error::AdiError,
+        tag::Tag,
+    },
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -11,7 +15,7 @@ pub struct Record<'a> {
 }
 
 impl<'a> Record<'a> {
-    pub fn parse(text: &'a str) -> Result<(Record<'a>, usize), AdiError> {
+    pub fn parse(text: &'a str, length_mode: LengthMode) -> Result<(Record<'a>, usize), AdiError> {
         let mut fields = HashMap::new();
         let mut consumed = 0;
         loop {
@@ -23,12 +27,19 @@ impl<'a> Record<'a> {
                     c,
                 )) => {
                     consumed += c;
-                    let value = get_field_value(&text[consumed..], value_length).ok_or(
-                        AdiError::ValueTooShort {
-                            expected: value_length,
-                            maximum: text.len() - consumed,
-                        },
-                    )?;
+                    let value = match get_field_value(&text[consumed..], length_mode, value_length)
+                    {
+                        FieldValue::Found(v) => v,
+                        FieldValue::InvalidBoundary => {
+                            return Err(AdiError::CharacterBoundary(consumed));
+                        }
+                        FieldValue::NotEnough => {
+                            return Err(AdiError::ValueTooShort {
+                                expected: value_length,
+                                maximum: text.len() - consumed,
+                            });
+                        }
+                    };
                     fields.insert(FieldName::new(name), value);
                     consumed += value_length;
                 }
@@ -48,7 +59,7 @@ impl<'a> Record<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::document::ToFieldName;
+    use crate::{document::ToFieldName, format::adi::data::LengthMode};
 
     use super::Record;
 
@@ -59,6 +70,9 @@ mod tests {
                 .into_iter()
                 .collect(),
         };
-        assert_eq!(Record::parse("<CALL:6>JL1HIS<eor>"), Ok((expected, 19)));
+        assert_eq!(
+            Record::parse("<CALL:6>JL1HIS<eor>", LengthMode::Bytes),
+            Ok((expected, 19))
+        );
     }
 }

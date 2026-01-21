@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use crate::format::adi::{data::get_field_value, error::AdiError, tag::Tag};
+use crate::format::adi::{
+    data::{FieldValue, LengthMode, get_field_value},
+    error::AdiError,
+    tag::Tag,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header<'a> {
@@ -9,7 +13,10 @@ pub struct Header<'a> {
 }
 
 impl<'a> Header<'a> {
-    pub fn parse(text: &'a str) -> Result<(Option<Header<'a>>, usize), AdiError> {
+    pub fn parse(
+        text: &'a str,
+        length_mode: LengthMode,
+    ) -> Result<(Option<Header<'a>>, usize), AdiError> {
         // > If the first character in an ADI file is <, it contains no Header.
         // https://adif.org.uk/316/ADIF_316.htm#ADI_File_Format
         let header_start = match text.find("<") {
@@ -30,12 +37,19 @@ impl<'a> Header<'a> {
                     c,
                 )) => {
                     consumed += c;
-                    let value = get_field_value(&text[consumed..], value_length).ok_or(
-                        AdiError::ValueTooShort {
-                            expected: value_length,
-                            maximum: text.len() - consumed,
-                        },
-                    )?;
+                    let value = match get_field_value(&text[consumed..], length_mode, value_length)
+                    {
+                        FieldValue::Found(v) => v,
+                        FieldValue::InvalidBoundary => {
+                            return Err(AdiError::CharacterBoundary(consumed));
+                        }
+                        FieldValue::NotEnough => {
+                            return Err(AdiError::ValueTooShort {
+                                expected: value_length,
+                                maximum: text.len() - consumed,
+                            });
+                        }
+                    };
                     fields.insert(name, value);
                     consumed += value_length;
                 }
@@ -55,6 +69,8 @@ impl<'a> Header<'a> {
 
 #[cfg(test)]
 mod tests {
+    use crate::format::adi::data::LengthMode;
+
     use super::Header;
 
     #[test]
@@ -72,6 +88,9 @@ mod tests {
             .into_iter()
             .collect(),
         };
-        assert_eq!(Header::parse(adi_text), Ok((Some(expected), 122)));
+        assert_eq!(
+            Header::parse(adi_text, LengthMode::Bytes),
+            Ok((Some(expected), 122))
+        );
     }
 }

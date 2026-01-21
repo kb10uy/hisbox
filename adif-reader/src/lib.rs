@@ -10,8 +10,10 @@ use crate::{
     format::{adi::AdiDocument, adx::AdxDocument},
 };
 
-pub fn read_adi(adi_text: &str) -> Result<AdifDocument, AdifError> {
-    let adi = AdiDocument::parse(adi_text)?;
+pub use format::adi::LengthMode;
+
+pub fn read_adi(adi_text: &str, length_mode: LengthMode) -> Result<AdifDocument, AdifError> {
+    let adi = AdiDocument::parse(adi_text, length_mode)?;
     Ok(adi.into_adif_document())
 }
 

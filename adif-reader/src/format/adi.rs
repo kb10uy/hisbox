@@ -9,6 +9,8 @@ use crate::{
     format::adi::{error::AdiError, header::Header, record::Record, tag::Tag},
 };
 
+pub use data::LengthMode;
+
 #[derive(Debug, Clone)]
 pub struct AdiDocument<'a> {
     header: Option<Header<'a>>,
@@ -16,15 +18,15 @@ pub struct AdiDocument<'a> {
 }
 
 impl<'a> AdiDocument<'a> {
-    pub fn parse(text: &'a str) -> Result<AdiDocument<'a>, AdiError> {
+    pub fn parse(text: &'a str, length_mode: LengthMode) -> Result<AdiDocument<'a>, AdiError> {
         let mut consumed = 0;
 
-        let (header, header_consumed) = Header::parse(&text[consumed..])?;
+        let (header, header_consumed) = Header::parse(&text[consumed..], length_mode)?;
         consumed += header_consumed;
 
         let mut records = vec![];
         while Tag::has_next(&text[consumed..]) {
-            let (record, record_consumed) = Record::parse(&text[consumed..])?;
+            let (record, record_consumed) = Record::parse(&text[consumed..], length_mode)?;
             consumed += record_consumed;
             records.push(record);
         }

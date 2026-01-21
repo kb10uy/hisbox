@@ -16,6 +16,9 @@ pub enum AdiError {
     #[error("tag error at index {0}: {1}")]
     Tag(usize, TagError),
 
+    #[error("invalid character boundary found: {0}")]
+    CharacterBoundary(usize),
+
     #[error("field value too short; expected {expected}, max {maximum}")]
     ValueTooShort { expected: usize, maximum: usize },
 }
