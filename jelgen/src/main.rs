@@ -13,7 +13,8 @@ fn main() -> Result<()> {
 
     let adi_text = read_to_string(args.adif_file)?;
     let adif = read_adi(&adi_text)?;
-    println!("Hello, world!");
+
+    println!("{} records imported", adif.records().len());
 
     Ok(())
 }
