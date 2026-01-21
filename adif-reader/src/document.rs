@@ -3,7 +3,7 @@ mod record;
 
 use std::collections::HashMap;
 
-pub use field_name::{FieldName, ToFieldName};
+pub use field_name::FieldName;
 pub use record::Record;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,11 +14,7 @@ pub struct AdifDocument {
 }
 
 impl AdifDocument {
-    pub fn new<P, H, R, RS>(
-        preamble: P,
-        headers: H,
-        records: RS,
-    ) -> AdifDocument
+    pub fn new<P, H, R, RS>(preamble: P, headers: H, records: RS) -> AdifDocument
     where
         P: Into<String>,
         H: IntoIterator<Item = (String, String)>,

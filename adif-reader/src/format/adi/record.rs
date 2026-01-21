@@ -59,16 +59,14 @@ impl<'a> Record<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{document::ToFieldName, format::adi::data::LengthMode};
+    use crate::format::adi::data::LengthMode;
 
     use super::Record;
 
     #[test]
     fn parses_header() {
         let expected = Record {
-            fields: vec![("CALL".to_field_name(), "JL1HIS")]
-                .into_iter()
-                .collect(),
+            fields: vec![("CALL".into(), "JL1HIS")].into_iter().collect(),
         };
         assert_eq!(
             Record::parse("<CALL:6>JL1HIS<eor>", LengthMode::Bytes),

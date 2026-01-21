@@ -20,6 +20,13 @@ fn main() -> Result<()> {
     )?;
 
     println!("{} records imported", adif.records().len());
+    for record in adif.records() {
+        let date = record.field("QSO_DATE").unwrap_or_default();
+        let time_on = record.field("TIME_ON").unwrap_or_default();
+        let call = record.field("CALL").unwrap_or_default();
+
+        println!("{date} {time_on} {call}");
+    }
 
     Ok(())
 }

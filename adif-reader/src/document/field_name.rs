@@ -22,24 +22,14 @@ impl<'a> FieldName<'a> {
     }
 }
 
-pub trait ToFieldName<'a> {
-    fn to_field_name(self) -> FieldName<'a>;
-}
-
-impl<'a> ToFieldName<'a> for FieldName<'a> {
-    fn to_field_name(self) -> FieldName<'a> {
-        self
+impl<'a> From<&'a str> for FieldName<'a> {
+    fn from(value: &'a str) -> Self {
+        FieldName::new(value)
     }
 }
 
-impl<'a> ToFieldName<'a> for &'a str {
-    fn to_field_name(self) -> FieldName<'a> {
-        FieldName::new(self)
-    }
-}
-
-impl<'a> ToFieldName<'a> for String {
-    fn to_field_name(self) -> FieldName<'a> {
-        FieldName::new_owned(self)
+impl<'a> From<String> for FieldName<'a> {
+    fn from(value: String) -> Self {
+        FieldName::new_owned(value)
     }
 }

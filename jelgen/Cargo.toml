@@ -9,3 +9,4 @@ authors.workspace = true
 anyhow.workspace = true
 adif-reader = { workspace = true }
 clap = { workspace = true }
+time = { workspace = true }
