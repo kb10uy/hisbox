@@ -1,16 +1,19 @@
-mod error;
+pub mod error;
 mod field_name;
 mod header;
 mod record;
 
 use roxmltree::{Document, NodeType};
 
-use crate::format::adx::{error::AdxError, header::Header, record::Record};
+use crate::{
+    document::{AdifDocument, IntoAdifDocument},
+    format::adx::{error::AdxError, header::Header, record::Record},
+};
 
 #[derive(Debug, Clone)]
 pub struct AdxDocument<'a> {
-    pub header: Header<'a>,
-    pub records: Vec<Record<'a>>,
+    header: Header<'a>,
+    records: Vec<Record<'a>>,
 }
 
 impl<'a, 'i: 'a> AdxDocument<'a> {
@@ -56,5 +59,21 @@ impl<'a, 'i: 'a> AdxDocument<'a> {
             header,
             records: records?,
         })
+    }
+}
+
+impl<'a> IntoAdifDocument for AdxDocument<'a> {
+    fn into_adif_document(self) -> AdifDocument {
+        let headers = self
+            .header
+            .fields
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()));
+        let records = self.records.into_iter().map(|r| {
+            r.fields
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+        });
+        AdifDocument::new("", headers, records)
     }
 }

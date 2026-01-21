@@ -16,6 +16,10 @@ impl<'a> FieldName<'a> {
         name.make_ascii_uppercase();
         FieldName(Cow::Owned(name))
     }
+
+    pub fn as_str(&'a self) -> &'a str {
+        &self.0
+    }
 }
 
 pub trait ToFieldName<'a> {
