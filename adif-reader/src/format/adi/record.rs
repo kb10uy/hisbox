@@ -41,7 +41,7 @@ impl<'a> Record<'a> {
                         }
                     };
                     fields.insert(FieldName::new(name), value);
-                    consumed += value_length;
+                    consumed += value.len();
                 }
                 Ok((Tag::EndOfRecord, c)) => {
                     consumed += c;

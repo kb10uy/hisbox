@@ -51,7 +51,7 @@ impl<'a> Header<'a> {
                         }
                     };
                     fields.insert(name, value);
-                    consumed += value_length;
+                    consumed += value.len();
                 }
                 Ok((Tag::EndOfHeader, c)) => {
                     consumed += c;

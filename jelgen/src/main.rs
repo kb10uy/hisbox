@@ -2,7 +2,7 @@ mod cli;
 
 use std::fs::read_to_string;
 
-use adif_reader::{LengthMode, read_adi};
+use adif_reader::read_adi;
 use anyhow::Result;
 use clap::Parser;
 
@@ -12,7 +12,12 @@ fn main() -> Result<()> {
     let args = Arguments::parse();
 
     let adi_text = read_to_string(args.adif_file)?;
-    let adif = read_adi(&adi_text, LengthMode::Bytes)?;
+    let adif = read_adi(
+        &adi_text,
+        args.lenient_length
+            .unwrap_or(cli::LenientMode::Bytes)
+            .into(),
+    )?;
 
     println!("{} records imported", adif.records().len());
 
