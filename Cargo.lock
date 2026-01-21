@@ -157,6 +157,7 @@ dependencies = [
  "adif-reader",
  "anyhow",
  "clap",
+ "thiserror",
  "time",
 ]
 
