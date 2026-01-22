@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    fmt::{Display, Formatter, Result as FmtResult},
+    str::FromStr,
+};
 use thiserror::Error as ThisError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -77,6 +80,44 @@ impl FromStr for Band {
             "1mm" => Ok(Band::Millimeter1),
             "submm" => Ok(Band::SubMillimeter),
             _ => Err(InvalidBand),
+        }
+    }
+}
+
+impl Display for Band {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
+            Band::Meter2190 => write!(f, "2190m"),
+            Band::Meter630 => write!(f, "630m"),
+            Band::Meter560 => write!(f, "560m"),
+            Band::Meter160 => write!(f, "160m"),
+            Band::Meter80 => write!(f, "80m"),
+            Band::Meter40 => write!(f, "40m"),
+            Band::Meter20 => write!(f, "20m"),
+            Band::Meter17 => write!(f, "17m"),
+            Band::Meter15 => write!(f, "15m"),
+            Band::Meter12 => write!(f, "12m"),
+            Band::Meter10 => write!(f, "10m"),
+            Band::Meter8 => write!(f, "8m"),
+            Band::Meter6 => write!(f, "6m"),
+            Band::Meter5 => write!(f, "5m"),
+            Band::Meter4 => write!(f, "4m"),
+            Band::Meter2 => write!(f, "2m"),
+            Band::Meter1P25 => write!(f, "1.25m"),
+            Band::Centimeter70 => write!(f, "70cm"),
+            Band::Centimeter33 => write!(f, "33cm"),
+            Band::Centimeter23 => write!(f, "23cm"),
+            Band::Centimeter13 => write!(f, "13cm"),
+            Band::Centimeter9 => write!(f, "9cm"),
+            Band::Centimeter6 => write!(f, "6cm"),
+            Band::Centimeter3 => write!(f, "3cm"),
+            Band::Centimeter1P25 => write!(f, "1.25cm"),
+            Band::Millimeter6 => write!(f, "6mm"),
+            Band::Millimeter4 => write!(f, "4mm"),
+            Band::Millimeter2P5 => write!(f, "2.5mm"),
+            Band::Millimeter2 => write!(f, "2mm"),
+            Band::Millimeter1 => write!(f, "1mm"),
+            Band::SubMillimeter => write!(f, "submm"),
         }
     }
 }

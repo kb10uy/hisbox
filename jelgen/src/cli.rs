@@ -14,6 +14,9 @@ const CUSTOM_OFFSET: &[BorrowedFormatItem<'_>] =
 #[derive(Debug, Clone, Parser)]
 #[command(version, author, about, long_about)]
 pub struct Arguments {
+    /// Processor script file.
+    pub processor_file: PathBuf,
+
     /// Input ADIF file.
     pub adif_file: PathBuf,
 
@@ -30,9 +33,14 @@ pub struct Arguments {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
 pub enum LenientMode {
+    /// Count by bytes.
     #[default]
     Bytes,
+
+    /// Count by codepoints.
     Codepoints,
+
+    /// Count by grapheme clusters.
     Graphemes,
 }
 

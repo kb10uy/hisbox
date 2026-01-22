@@ -13,15 +13,19 @@ const ADIF_TIME: &[BorrowedFormatItem<'_>] =
     format_description!("[hour repr:24 padding:zero][minute padding:zero][second padding:zero]");
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QsoExchange {
+    pub report: String,
+    pub number: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QsoRecord {
     pub datetime: UtcDateTime,
     pub band: Band,
     pub mode: String,
-    pub callsign: String,
-    pub sent_report: Option<String>,
-    pub sent_number: Option<String>,
-    pub received_report: Option<String>,
-    pub received_number: Option<String>,
+    pub call: String,
+    pub sent: Option<QsoExchange>,
+    pub received: Option<QsoExchange>,
 }
 
 impl QsoRecord {
@@ -41,15 +45,24 @@ impl QsoRecord {
         let received_report = get_optional_field_oneof(record, &["RST_RCVD"]);
         let received_number = get_optional_field_oneof(record, &["SRX", "SRX_STRING"]);
 
+        let sent = sent_report.zip(sent_number).map(|(r, n)| QsoExchange {
+            report: r.to_string(),
+            number: n.to_string(),
+        });
+        let received = received_report
+            .zip(received_number)
+            .map(|(r, n)| QsoExchange {
+                report: r.to_string(),
+                number: n.to_string(),
+            });
+
         Ok(QsoRecord {
             datetime,
             band: adif_band.parse()?,
             mode: mode.to_string(),
-            callsign: callsign.to_string(),
-            sent_report: sent_report.map(ToString::to_string),
-            sent_number: sent_number.map(ToString::to_string),
-            received_report: received_report.map(ToString::to_string),
-            received_number: received_number.map(ToString::to_string),
+            call: callsign.to_string(),
+            sent,
+            received,
         })
     }
 }
