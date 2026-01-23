@@ -12,7 +12,7 @@ use tracing::{Level, debug, span};
 use crate::{
     processor::{
         config::ProcessorConfig,
-        data::{QsoMetadata, QsoSummary, RecordInner},
+        data::{ContestSummary, QsoMetadata, QsoSummary, RecordInner},
         error::ProcessorError,
         lualib::{ProcessorLuaLibrary, jarl::Jarl},
     },
@@ -25,7 +25,7 @@ pub struct Processor {
     config: ProcessorConfig,
     qso_metadata: LuaFunction,
     process_qso: LuaFunction,
-    calculate_total: LuaFunction,
+    summarize: LuaFunction,
 }
 
 impl Processor {
@@ -48,9 +48,10 @@ impl Processor {
         let initialize: LuaFunction = processor_table.get("initialize")?;
         let qso_metadata: LuaFunction = processor_table.get("qso_metadata")?;
         let process_qso: LuaFunction = processor_table.get("process_qso")?;
-        let calculate_total: LuaFunction = processor_table.get("calculate_total")?;
+        let summarize: LuaFunction = processor_table.get("summarize")?;
 
-        let config_table: LuaTable = initialize.call(args)?;
+        let config_table: LuaTable =
+            span!(Level::ERROR, "initialize").in_scope(|| initialize.call(args))?;
         let config = ProcessorConfig::new(config_table)?;
 
         Ok(Processor {
@@ -58,7 +59,7 @@ impl Processor {
             config,
             qso_metadata,
             process_qso,
-            calculate_total,
+            summarize,
         })
     }
 
@@ -83,6 +84,22 @@ impl Processor {
     pub fn process(&self, record: &Record) -> Result<QsoSummary, ProcessorError> {
         let summary =
             span!(Level::ERROR, "process_qso").in_scope(|| self.process_qso.call(&record.0))?;
+        Ok(self.lua.from_value(summary)?)
+    }
+
+    pub fn summarize<RS, M>(&self, groups: M) -> Result<ContestSummary, ProcessorError>
+    where
+        RS: IntoIterator<Item = (String, QsoSummary)>,
+        M: IntoIterator<Item = (String, RS)>,
+    {
+        let groups: HashMap<_, Vec<_>> = groups
+            .into_iter()
+            .map(|(k, v)| (k, v.into_iter().collect()))
+            .collect();
+        let groups_value = self.lua.to_value(&groups);
+
+        let summary =
+            span!(Level::ERROR, "summarize").in_scope(|| self.summarize.call(groups_value))?;
         Ok(self.lua.from_value(summary)?)
     }
 

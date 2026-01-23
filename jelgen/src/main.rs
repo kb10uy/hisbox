@@ -87,9 +87,12 @@ fn main() -> Result<()> {
     }
 
     println!("Groups:");
-    for (group, summaries) in groups {
+    for (group, summaries) in &groups {
         println!("{group}: {}", summaries.len());
     }
+
+    let summary = processor.summarize(groups)?;
+    println!("Summary: {summary:?}");
 
     Ok(())
 }

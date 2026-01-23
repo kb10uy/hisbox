@@ -51,3 +51,8 @@ pub struct QsoMetadata {
     pub id: String,
     pub group: String,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ContestSummary {
+    pub total: i64,
+}
