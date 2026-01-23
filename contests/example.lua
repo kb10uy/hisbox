@@ -1,4 +1,7 @@
+local jarl = require("jarl");
+
 local function initialize(parameter)
+    print(jarl.example())
     return {
         datetime_offset = "09:00",
     }

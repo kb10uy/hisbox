@@ -5,6 +5,9 @@ use thiserror::Error as ThisError;
 
 #[derive(Debug, ThisError)]
 pub enum ProcessorError {
+    #[error("invalid script path")]
+    InvalidPath,
+
     #[error("IO error: {0}")]
     Io(#[from] IoError),
 
