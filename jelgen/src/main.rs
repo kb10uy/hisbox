@@ -11,6 +11,7 @@ use adif_reader::read_adi;
 use anyhow::Result;
 use clap::Parser;
 use tracing::{Level, info, span, warn};
+use tracing_subscriber::EnvFilter;
 
 use crate::{
     cli::Arguments,
@@ -19,7 +20,11 @@ use crate::{
 };
 
 fn main() -> Result<()> {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt()
+        .without_time()
+        .with_target(false)
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
 
     let args = Arguments::parse();
 

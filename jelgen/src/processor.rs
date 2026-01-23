@@ -6,7 +6,7 @@ use std::{collections::HashMap, fs::read_to_string, path::Path};
 
 use mlua::prelude::*;
 use time::UtcOffset;
-use tracing::debug;
+use tracing::{Level, debug, span};
 
 use crate::{
     processor::{
@@ -68,12 +68,12 @@ impl Processor {
     }
 
     pub fn metadata(&self, record: &Record) -> Result<QsoMetadata, ProcessorError> {
-        let metadata = self.qso_metadata.call(&record.0)?;
+        let metadata = span!(Level::ERROR, "qso_metadata").in_scope(|| self.qso_metadata.call(&record.0))?;
         Ok(self.lua.from_value(metadata)?)
     }
 
     pub fn process(&self, record: &Record) -> Result<QsoSummary, ProcessorError> {
-        let summary = self.process_qso.call(&record.0)?;
+        let summary = span!(Level::ERROR, "process_qso").in_scope(|| self.process_qso.call(&record.0))?;
         Ok(self.lua.from_value(summary)?)
     }
 
@@ -89,7 +89,6 @@ impl Processor {
 
         globals.set("_print", original)?;
         globals.set("print", hooked)?;
-        debug!("Lua print() hooked");
 
         Ok(())
     }
