@@ -1,6 +1,6 @@
 use mlua::prelude::*;
 
-use crate::processor::lualib::ProcessorLuaLibrary;
+use crate::calculator::lualib::CalculatorLibrary;
 
 #[derive(Debug)]
 pub struct Jarl {}
@@ -11,7 +11,7 @@ impl Jarl {
     }
 }
 
-impl ProcessorLuaLibrary for Jarl {
+impl CalculatorLibrary for Jarl {
     fn create_module_table(lua: &Lua, _: LuaMultiValue) -> Result<LuaTable, LuaError> {
         let t = lua.create_table()?;
 

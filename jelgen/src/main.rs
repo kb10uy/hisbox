@@ -1,5 +1,5 @@
+mod calculator;
 mod cli;
-mod processor;
 mod qso;
 
 use std::{
@@ -7,16 +7,18 @@ use std::{
     fs::read_to_string,
 };
 
-use adif_reader::read_adi;
+use adif_reader::{document::Record, read_adi};
 use anyhow::Result;
 use clap::Parser;
-use tracing::{Level, info, span, warn};
+use mlua::prelude::*;
+use time::UtcOffset;
+use tracing::{Level, info, instrument, span, warn};
 use tracing_subscriber::EnvFilter;
 
 use crate::{
+    calculator::{Calculator, data::RecordSummary, error::ProcessorError},
     cli::Arguments,
-    processor::{Processor, data::QsoSummary},
-    qso::record::QsoRecord,
+    qso::{error::QsoError, record::QsoRecord},
 };
 
 fn main() -> Result<()> {
@@ -32,12 +34,12 @@ fn main() -> Result<()> {
     let adif = read_adi(&adi_text, args.lenient_length.unwrap_or_default().into())?;
     info!("{} records imported", adif.records().len());
 
-    let processor = Processor::initialize(args.processor_file, Default::default())?;
+    let processor = Calculator::initialize(args.processor_file, Default::default())?;
     let process_offset = processor.process_offset();
     let import_offset = args.import_offset.unwrap_or_default().into();
 
     let mut processed_ids = HashSet::new();
-    let mut groups: HashMap<String, Vec<(String, QsoSummary)>> = HashMap::new();
+    let mut groups: HashMap<String, Vec<(String, RecordSummary)>> = HashMap::new();
 
     for (i, record) in adif.records().iter().enumerate() {
         let span = span!(Level::ERROR, "record_process", index = i);
@@ -56,7 +58,7 @@ fn main() -> Result<()> {
             continue;
         };
 
-        let metadata = match processor.metadata(&processor_record) {
+        let metadata = match processor.key(&processor_record) {
             Ok(s) => s,
             Err(e) => {
                 warn!("metadata failed ({e})");
@@ -96,3 +98,58 @@ fn main() -> Result<()> {
 
     Ok(())
 }
+
+#[derive(Debug)]
+struct MainProcess {
+    processor: Calculator,
+    import_offset: UtcOffset,
+    process_offset: UtcOffset,
+
+    processed_ids: HashSet<String>,
+    groups: HashMap<String, Vec<(String, RecordSummary)>>,
+}
+
+enum ProcessStatus {
+    Processed(RecordSummary),
+    Duplicate,
+    NoNumbers,
+    QsoError(QsoError),
+    ProcessorError(ProcessorError),
+}
+
+/*
+impl MainProcess {
+    #[instrument(skip(self, record))]
+    fn process_record(&mut self, (i, record): (usize, &Record)) -> ProcessStatus {
+        let qso_record = match QsoRecord::new(record, self.import_offset) {
+            Ok(r) => r,
+            Err(e) => return ProcessStatus::QsoError(e),
+        };
+
+        let Some(processor_record) = self
+            .processor
+            .convert_record(&qso_record, self.process_offset)
+        else {
+            return ProcessStatus::NoNumbers;
+        };
+
+        let metadata = match self.processor.metadata(&processor_record) {
+            Ok(s) => s,
+            Err(e) => return ProcessStatus::LuaError(e),
+        };
+        if self.processed_ids.contains(&metadata.id) {
+            warn!("id {} duplicate", metadata.id);
+            continue;
+        }
+
+        let summary = match processor.process(&processor_record) {
+            Ok(s) => s,
+            Err(e) => {
+                warn!("process failed ({e})");
+                continue;
+            }
+        };
+        Ok(())
+    }
+}
+*/

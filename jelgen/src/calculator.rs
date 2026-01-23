@@ -1,6 +1,6 @@
 mod config;
 pub mod data;
-mod error;
+pub mod error;
 mod lualib;
 
 use std::{collections::HashMap, fs::read_to_string, path::Path};
@@ -10,29 +10,29 @@ use time::UtcOffset;
 use tracing::{Level, debug, span};
 
 use crate::{
-    processor::{
-        config::ProcessorConfig,
-        data::{ContestSummary, QsoMetadata, QsoSummary, RecordInner},
+    calculator::{
+        config::CalculatorConfig,
+        data::{ContestSummary, Record, RecordKey, RecordSummary},
         error::ProcessorError,
-        lualib::{ProcessorLuaLibrary, jarl::Jarl},
+        lualib::{CalculatorLibrary, jarl::Jarl},
     },
     qso::record::QsoRecord,
 };
 
 #[derive(Debug)]
-pub struct Processor {
+pub struct Calculator {
     lua: Lua,
-    config: ProcessorConfig,
-    qso_metadata: LuaFunction,
+    config: CalculatorConfig,
+    qso_key: LuaFunction,
     process_qso: LuaFunction,
     summarize: LuaFunction,
 }
 
-impl Processor {
+impl Calculator {
     pub fn initialize(
         script_path: impl AsRef<Path>,
         args: HashMap<String, String>,
-    ) -> Result<Processor, ProcessorError> {
+    ) -> Result<Calculator, ProcessorError> {
         let script_path = script_path.as_ref();
         let script_dir = script_path
             .parent()
@@ -46,18 +46,18 @@ impl Processor {
         let processor_table: LuaTable = lua.load(script_text).eval()?;
 
         let initialize: LuaFunction = processor_table.get("initialize")?;
-        let qso_metadata: LuaFunction = processor_table.get("qso_metadata")?;
+        let qso_key: LuaFunction = processor_table.get("qso_key")?;
         let process_qso: LuaFunction = processor_table.get("process_qso")?;
         let summarize: LuaFunction = processor_table.get("summarize")?;
 
         let config_table: LuaTable =
             span!(Level::ERROR, "initialize").in_scope(|| initialize.call(args))?;
-        let config = ProcessorConfig::new(config_table)?;
+        let config = CalculatorConfig::new(config_table)?;
 
-        Ok(Processor {
+        Ok(Calculator {
             lua,
             config,
-            qso_metadata,
+            qso_key,
             process_qso,
             summarize,
         })
@@ -75,13 +75,12 @@ impl Processor {
         Record::new(&self.lua, qso_record, process_offset)
     }
 
-    pub fn metadata(&self, record: &Record) -> Result<QsoMetadata, ProcessorError> {
-        let metadata =
-            span!(Level::ERROR, "qso_metadata").in_scope(|| self.qso_metadata.call(&record.0))?;
+    pub fn key(&self, record: &Record) -> Result<RecordKey, ProcessorError> {
+        let metadata = span!(Level::ERROR, "qso_key").in_scope(|| self.qso_key.call(&record.0))?;
         Ok(self.lua.from_value(metadata)?)
     }
 
-    pub fn process(&self, record: &Record) -> Result<QsoSummary, ProcessorError> {
+    pub fn process(&self, record: &Record) -> Result<RecordSummary, ProcessorError> {
         let summary =
             span!(Level::ERROR, "process_qso").in_scope(|| self.process_qso.call(&record.0))?;
         Ok(self.lua.from_value(summary)?)
@@ -89,7 +88,7 @@ impl Processor {
 
     pub fn summarize<RS, M>(&self, groups: M) -> Result<ContestSummary, ProcessorError>
     where
-        RS: IntoIterator<Item = (String, QsoSummary)>,
+        RS: IntoIterator<Item = (String, RecordSummary)>,
         M: IntoIterator<Item = (String, RS)>,
     {
         let groups: HashMap<_, Vec<_>> = groups
@@ -133,16 +132,5 @@ impl Processor {
         package_preload.set("jarl", lua.create_function(Jarl::create_module_table)?)?;
 
         Ok(())
-    }
-}
-
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct Record(LuaValue);
-
-impl Record {
-    pub fn new(lua: &Lua, qso_record: &QsoRecord, process_offset: UtcOffset) -> Option<Record> {
-        let inner = RecordInner::new(qso_record, process_offset)?;
-        Some(Record(lua.to_value(&inner).ok()?))
     }
 }

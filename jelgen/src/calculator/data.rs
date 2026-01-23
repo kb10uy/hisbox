@@ -1,3 +1,4 @@
+use mlua::prelude::*;
 use serde::{Deserialize, Serialize};
 use time::{UtcOffset, format_description::BorrowedFormatItem, macros::format_description};
 
@@ -5,6 +6,17 @@ use crate::qso::record::QsoRecord;
 
 const RECORD_DATE: &[BorrowedFormatItem<'_>] = format_description!("[year]-[month]-[day]");
 const RECORD_TIME: &[BorrowedFormatItem<'_>] = format_description!("[hour]:[minute]:[second]");
+
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct Record(pub LuaValue);
+
+impl Record {
+    pub fn new(lua: &Lua, qso_record: &QsoRecord, process_offset: UtcOffset) -> Option<Record> {
+        let inner = RecordInner::new(qso_record, process_offset)?;
+        Some(Record(lua.to_value(&inner).ok()?))
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub(super) struct RecordInner<'a> {
@@ -41,15 +53,21 @@ impl<'a> RecordInner<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct QsoSummary {
-    pub multiplier: i64,
+pub struct RecordSummary {
+    pub multiplier: Option<String>,
     pub point: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct QsoMetadata {
+pub struct RecordKey {
     pub id: String,
     pub group: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ContestEntry {
+    pub id: String,
+    pub summary: RecordSummary,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

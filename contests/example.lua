@@ -7,7 +7,7 @@ local function initialize(parameter)
     }
 end
 
-local function qso_metadata(record)
+local function qso_key(record)
     return {
         id = record.call,
         group = record.band,
@@ -30,7 +30,7 @@ end
 
 return {
     initialize = initialize,
-    qso_metadata = qso_metadata,
+    qso_key = qso_key,
     process_qso = process_qso,
     summarize = summarize,
 }
