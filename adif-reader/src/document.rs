@@ -47,6 +47,10 @@ impl AdifDocument {
         self.headers.get(field_name.as_str()).map(|s| s.as_str())
     }
 
+    pub fn headers(&self) -> &HashMap<String, String> {
+        &self.headers
+    }
+
     pub fn records(&self) -> &[Record] {
         &self.records
     }

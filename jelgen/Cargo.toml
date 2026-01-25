@@ -6,7 +6,7 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
-anyhow.workspace = true
+anyhow = { workspace = true }
 adif-reader = { workspace = true }
 clap = { workspace = true }
 mlua = { workspace = true }

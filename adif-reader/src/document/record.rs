@@ -24,4 +24,8 @@ impl Record {
         let field_name = name.into();
         self.fields.get(field_name.as_str()).map(|s| s.as_str())
     }
+
+    pub fn fields(&self) -> &HashMap<String, String> {
+        &self.fields
+    }
 }
