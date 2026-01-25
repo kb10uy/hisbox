@@ -6,5 +6,12 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+quote = "1.0.44"
 serde = { workspace = true }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+
+[build-dependencies]
+itertools = { workspace = true }
