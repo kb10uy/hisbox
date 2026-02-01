@@ -10,6 +10,7 @@ anyhow = { workspace = true }
 adif-reader = { workspace = true }
 clap = { workspace = true }
 mlua = { workspace = true }
+rhai = { workspace = true }
 thiserror = { workspace = true }
 time = { workspace = true }
 serde = { workspace = true }
