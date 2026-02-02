@@ -20,27 +20,27 @@ fn main() {
 
     writeln!(
         writer,
-        r#"const PREFIXES: &[(crate::prefix::Prefix, usize)] = &["#
+        r#"pub const PREFIXES: &[(crate::callsign::prefix::Prefix, usize)] = &["#
     )
     .expect("failed to write");
     for (p, i) in prefixes {
         let prefix_str = match p {
-            Prefix::ByOneAll(p1) => format!("crate::prefix::Prefix::ByOneAll({p1})"),
+            Prefix::ByOneAll(p1) => format!("crate::callsign::prefix::Prefix::OneAll({p1})"),
             Prefix::ByTwoRange(p1, (p2s, p2e)) => {
-                format!("crate::prefix::Prefix::ByTwoRange({p1}, ({p2s}, {p2e}))")
+                format!("crate::callsign::prefix::Prefix::TwoRange({p1}, ({p2s}, {p2e}))")
             }
             Prefix::ByTwoSpecified(p1, p2) => {
-                format!("crate::prefix::Prefix::ByTwoSpecified({p1}, {p2})")
+                format!("crate::callsign::prefix::Prefix::TwoSpecified({p1}, {p2})")
             }
             Prefix::ByThreeRange(p1, p2, (p3s, p3e)) => {
-                format!("crate::prefix::Prefix::ByThreeRange({p1}, {p2}, ({p3s}, {p3e}))")
+                format!("crate::callsign::prefix::Prefix::ThreeRange({p1}, {p2}, ({p3s}, {p3e}))")
             }
         };
         writeln!(writer, r#"    ({prefix_str}, {i}),"#).expect("failed to write");
     }
     writeln!(writer, r#"];"#).expect("failed to write");
 
-    writeln!(writer, r#"const AREA_NAMES: &[&str] = &["#).expect("failed to write");
+    writeln!(writer, r#"pub const AREA_NAMES: &[&str] = &["#).expect("failed to write");
     for name in area_names {
         writeln!(writer, r#"    "{}","#, name.escape_default()).expect("failed to write");
     }

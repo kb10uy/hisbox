@@ -1,6 +1,6 @@
 use std::env::args;
 
-use callfind::lookup_prefix_area;
+use callfind::callsign::lookup_prefix_area;
 
 fn main() {
     let calls = args().skip(1);
