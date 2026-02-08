@@ -8,6 +8,7 @@ authors.workspace = true
 [dependencies]
 quote = "1.0.44"
 serde = { workspace = true }
+serde_with = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
