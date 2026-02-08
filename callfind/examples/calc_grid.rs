@@ -1,6 +1,6 @@
 use std::env::args;
 
-use callfind::grid_locator::calculate_grid;
+use callfind::grid_locator::GridLocator;
 
 fn main() {
     let lnglats = args().skip(1);
@@ -12,10 +12,13 @@ fn main() {
             continue;
         };
 
-        let Some(gl) = calculate_grid(longitude, latitude) else {
-            continue;
+        let gl = match GridLocator::from_lnglat(longitude, latitude) {
+            Ok(gl) => gl,
+            Err(e) => {
+                eprintln!("{lnglat}: {e}");
+                continue;
+            }
         };
-        let gl = str::from_utf8(&gl).expect("must be valid");
 
         println!("{lnglat}: {gl}");
     }
