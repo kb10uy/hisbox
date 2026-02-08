@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["jelgen", "adif-reader", "adif2json", "callfind"]
+members = ["jelgen", "adif-reader", "adif2json", "callfind", "qcgen"]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,6 +10,7 @@ authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
 
 [workspace.dependencies]
 adif-reader = { path = "./adif-reader" }
+callfind = { path = "./callfind" }
 
 anyhow = "1.0.100"
 clap = { version = "4.5.54", features = ["derive"] }
@@ -28,6 +29,7 @@ time = { version = "0.3.45", features = [
   "parsing",
   "macros",
 ] }
+toml = "0.9.11"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 unicode-segmentation = "1.12.0"
