@@ -54,7 +54,7 @@ impl FromStr for GridLocatorInner {
             None => {
                 return Ok(GridLocatorInner::ToSquare([fi_lng, fi_lat, si_lng, si_lat]));
             }
-            Some((lng @ b'a'..=b'z', lat @ b'a'..=b'z')) => (lng - b'a', lat - b'z'),
+            Some((lng @ b'a'..=b'z', lat @ b'a'..=b'z')) => (lng - b'a', lat - b'a'),
             _ => return Err(GridLocatorError::OutOfRange),
         };
         let (s2i_lng, s2i_lat) = match sub2 {
@@ -72,7 +72,7 @@ impl FromStr for GridLocatorInner {
                     fi_lng, fi_lat, si_lng, si_lat, s1i_lng, s1i_lat, s2i_lng, s2i_lat,
                 ]));
             }
-            Some((lng @ b'a'..=b'z', lat @ b'a'..=b'z')) => (lng - b'a', lat - b'z'),
+            Some((lng @ b'a'..=b'z', lat @ b'a'..=b'z')) => (lng - b'a', lat - b'a'),
             _ => return Err(GridLocatorError::OutOfRange),
         };
 
