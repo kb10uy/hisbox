@@ -1,7 +1,6 @@
 mod calculator;
 mod cli;
 mod qso;
-mod scop;
 
 use std::{
     collections::{HashMap, HashSet, hash_map::Entry},

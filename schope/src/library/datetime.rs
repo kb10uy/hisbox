@@ -1,4 +1,4 @@
-use rhai::{CustomType, EvalAltResult};
+use rhai::{CustomType, EvalAltResult, Module, export_module, plugin::*};
 use time::{
     OffsetDateTime, UtcOffset, error::Parse as TimeParseError,
     format_description::well_known::Rfc3339,
@@ -8,7 +8,7 @@ use time::{
 #[repr(transparent)]
 pub struct SchopDateTime(OffsetDateTime);
 
-// #[allow(clippy::wrong_self_convention)]
+#[allow(clippy::wrong_self_convention)]
 impl SchopDateTime {
     fn new(dt_str: &str) -> Result<SchopDateTime, Box<EvalAltResult>> {
         Ok(OffsetDateTime::parse(dt_str, &Rfc3339)
@@ -47,4 +47,15 @@ fn map_parse_error(e: TimeParseError) -> Box<EvalAltResult> {
         "failed to parse datetime str".into(),
         e.into(),
     ))
+}
+
+#[export_module]
+pub mod module {
+    pub type DateTime = SchopDateTime;
+
+    pub fn parse_rfc3339(dt_str: &str) -> Result<SchopDateTime, String> {
+        Ok(OffsetDateTime::parse(dt_str, &Rfc3339)
+            .map_err(|_| "あああ".to_string())?
+            .into())
+    }
 }
