@@ -19,11 +19,11 @@ impl IntoLua for Record {
         let table = lua.create_table()?;
         table.set("datetime", self.datetime)?;
         table.set("band", self.band.to_string())?;
-        table.set("freq", self.datetime)?;
         table.set(
-            "freq_str",
+            "freq",
             self.freq.parse::<f64>().map_err(LuaError::external)?,
         )?;
+        table.set("freq_str", self.freq.to_string())?;
         table.set("mode", self.mode.to_string())?;
         table.set("call", self.call.to_string())?;
 
