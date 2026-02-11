@@ -1,15 +1,11 @@
 mod cli;
 
-use std::{
-    collections::{HashMap, HashSet, hash_map::Entry},
-    fs::read_to_string,
-};
+use std::fs::read_to_string;
 
 use adif_reader::read_adi;
 use anyhow::Result;
 use clap::Parser;
-use time::UtcOffset;
-use tracing::{Level, info, span, warn};
+use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 use crate::cli::Arguments;

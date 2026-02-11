@@ -3,7 +3,6 @@ resolver = "3"
 members = [
   "jelgen",
   "adif-reader",
-  "adif2json",
   "callfind",
   "qcgen",
   "schope",
