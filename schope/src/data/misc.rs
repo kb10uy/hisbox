@@ -9,6 +9,7 @@ pub struct Misc {
     pub operator: Option<CompactString>,
     pub address: Option<CompactString>,
     pub grid: Option<GridLocator>,
+    pub manager: Option<CompactString>,
 }
 
 impl LuaUserData for Misc {

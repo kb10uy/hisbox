@@ -1,12 +1,11 @@
 use adif_reader::document::Record;
 use compact_str::{CompactString, ToCompactString};
-use num::Rational64;
 use time::{
     Date, OffsetDateTime, Time, UtcDateTime, UtcOffset, format_description::BorrowedFormatItem,
     macros::format_description,
 };
 
-use crate::{band::Band, error::QsoError, get_required_field, parse_decimal};
+use crate::{band::Band, error::QsoError, get_required_field};
 
 const ADIF_DATE: &[BorrowedFormatItem<'_>] = format_description!(
     "[year repr:full padding:zero][month repr:numerical padding:zero][day padding:zero]"
@@ -26,7 +25,7 @@ pub struct QsoRecord {
     pub band: Band,
     pub mode: CompactString,
     pub call: CompactString,
-    pub frequency: Rational64,
+    pub frequency: CompactString,
 }
 
 impl QsoRecord {
@@ -48,7 +47,7 @@ impl QsoRecord {
             band: adif_band.parse()?,
             mode: mode.to_compact_string(),
             call: callsign.to_compact_string(),
-            frequency: parse_decimal(frequency).map_err(QsoError::FrequencyParse)?,
+            frequency: frequency.to_compact_string(),
         })
     }
 }

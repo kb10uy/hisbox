@@ -12,6 +12,11 @@ pub struct Arguments {
     /// Input ADIF file.
     pub adif_file: PathBuf,
 
+    /// Enable lenient length count for ADI file.
+    /// Pedantic ADI file must not contain non-ASCII characters.
+    #[clap(short, long = "lenient")]
+    pub lenient_length: Option<LenientMode>,
+
     /// Specify instruments definition file.
     #[clap(short, long = "instruments")]
     pub instruments_files: Vec<PathBuf>,
@@ -20,10 +25,18 @@ pub struct Arguments {
     #[clap(short, long = "operations")]
     pub operations_files: Vec<PathBuf>,
 
-    /// Enable lenient length count for ADI file.
-    /// Pedantic ADI file must not contain non-ASCII characters.
-    #[clap(short, long = "lenient")]
-    pub lenient_length: Option<LenientMode>,
+    /// Specify default instrument.
+    #[clap(short = 'I', long)]
+    pub instrument: Option<String>,
+
+    /// Specify default operation.
+    #[clap(short = 'O', long)]
+    pub operation: Option<String>,
+
+    /// Specify default power.
+    /// It overrides default instrument's value.
+    #[clap(short = 'P', long)]
+    pub power: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]

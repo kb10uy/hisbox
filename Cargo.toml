@@ -19,6 +19,8 @@ authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
 [workspace.dependencies]
 adif-reader = { path = "./adif-reader" }
 callfind = { path = "./callfind" }
+common-qso = { path = "./common-qso" }
+schope = { path = "./schope" }
 
 anyhow = "1.0.100"
 clap = { version = "4.5.54", features = ["derive"] }
