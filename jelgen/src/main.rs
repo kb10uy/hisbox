@@ -1,4 +1,3 @@
-mod calculator;
 mod cli;
 
 use std::{
@@ -6,17 +5,14 @@ use std::{
     fs::read_to_string,
 };
 
-use adif_reader::{document::Record, read_adi};
+use adif_reader::read_adi;
 use anyhow::Result;
 use clap::Parser;
 use time::UtcOffset;
-use tracing::{Level, info, instrument, span, warn};
+use tracing::{Level, info, span, warn};
 use tracing_subscriber::EnvFilter;
 
-use crate::{
-    calculator::{Calculator, data::RecordSummary, error::ProcessorError},
-    cli::Arguments,
-};
+use crate::cli::Arguments;
 
 fn main() -> Result<()> {
     tracing_subscriber::fmt()
@@ -31,6 +27,7 @@ fn main() -> Result<()> {
     let adif = read_adi(&adi_text, args.lenient_length.unwrap_or_default().into())?;
     info!("{} records imported", adif.records().len());
 
+    /*
     let processor = Calculator::initialize(args.processor_file, Default::default())?;
     let process_offset = processor.process_offset();
     let import_offset = args.import_offset.unwrap_or_default().into();
@@ -92,10 +89,12 @@ fn main() -> Result<()> {
 
     let summary = processor.summarize(groups)?;
     println!("Summary: {summary:?}");
+    */
 
     Ok(())
 }
 
+/*
 #[derive(Debug)]
 struct MainProcess {
     processor: Calculator,
@@ -113,6 +112,7 @@ enum ProcessStatus {
     QsoError(QsoError),
     ProcessorError(ProcessorError),
 }
+*/
 
 /*
 impl MainProcess {
