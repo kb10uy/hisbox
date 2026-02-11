@@ -697,6 +697,7 @@ dependencies = [
  "regex",
  "schope",
  "serde",
+ "serde_json",
  "time",
  "toml",
  "tracing",

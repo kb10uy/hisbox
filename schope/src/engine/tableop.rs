@@ -48,10 +48,15 @@ pub fn check_table_type(table: &LuaTable) -> LuaResult<TableType> {
         }
     }
 
-    for i in 1..=table.raw_len() {
-        if !table.contains_key(i)? {
-            return Ok(TableType::Map);
+    match table.raw_len() {
+        0 => Ok(TableType::Map),
+        n => {
+            for i in 1..=n {
+                if !table.contains_key(i)? {
+                    return Ok(TableType::Map);
+                }
+            }
+            Ok(TableType::List)
         }
     }
-    Ok(TableType::List)
 }

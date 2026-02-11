@@ -1,13 +1,14 @@
-use std::path::PathBuf;
+use std::{convert::Infallible, path::PathBuf, str::FromStr};
 
 use adif_reader::LengthMode;
 use clap::{Parser, ValueEnum};
+use compact_str::{CompactString, ToCompactString};
 
 #[derive(Debug, Clone, Parser)]
 #[command(version, author, about, long_about)]
 pub struct Arguments {
     /// Processor script file.
-    pub processor_file: PathBuf,
+    pub script_path: PathBuf,
 
     /// Input ADIF file.
     pub adif_file: PathBuf,
@@ -24,6 +25,10 @@ pub struct Arguments {
     /// Specify operations definition file.
     #[clap(short, long = "operations")]
     pub operations_files: Vec<PathBuf>,
+
+    /// Specify arguments passed to script.
+    #[clap(short = 'A', long = "args")]
+    pub script_args: Vec<ScriptArg>,
 
     /// Specify default instrument.
     #[clap(short = 'I', long)]
@@ -58,6 +63,23 @@ impl From<LenientMode> for LengthMode {
             LenientMode::Bytes => LengthMode::Bytes,
             LenientMode::Codepoints => LengthMode::Codepoints,
             LenientMode::Graphemes => LengthMode::Graphemes,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ScriptArg(pub CompactString, pub Option<CompactString>);
+
+impl FromStr for ScriptArg {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.split_once('=') {
+            Some((k, v)) => Ok(ScriptArg(
+                k.to_compact_string(),
+                Some(v.to_compact_string()),
+            )),
+            None => Ok(ScriptArg(s.to_compact_string(), None)),
         }
     }
 }

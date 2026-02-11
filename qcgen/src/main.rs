@@ -1,7 +1,7 @@
 mod cli;
 mod data;
 
-use std::{fs::read_to_string, process::exit, sync::LazyLock};
+use std::{collections::HashMap, fs::read_to_string, io::stdout, process::exit, sync::LazyLock};
 
 use adif_reader::read_adi;
 use anyhow::Result;
@@ -13,7 +13,7 @@ use mlua::prelude::*;
 use regex::Regex;
 use schope::{
     data::{misc::Misc, qsl_card::QslCardEntry},
-    engine::initialize_lua,
+    engine::{initialize_lua, lua_to_json},
 };
 use time::UtcOffset;
 use tracing::{Level, error, span, warn};
@@ -35,6 +35,12 @@ fn main() -> Result<()> {
         .init();
 
     let args = Arguments::parse();
+    let script_path = args.script_path.canonicalize()?;
+    let script_args: HashMap<_, _> = args
+        .script_args
+        .into_iter()
+        .map(|a| (a.0.to_string(), a.1.unwrap_or_default().to_string()))
+        .collect();
 
     let adi_text = read_to_string(args.adif_file)?;
     let adif = read_adi(&adi_text, args.lenient_length.unwrap_or_default().into())?;
@@ -92,7 +98,6 @@ fn main() -> Result<()> {
         });
     }
 
-    let script_path = args.processor_file.canonicalize()?;
     let script_text = read_to_string(&script_path)?;
     let Some(script_base) = script_path.parent() else {
         error!("script path is invalid");
@@ -101,6 +106,12 @@ fn main() -> Result<()> {
 
     let lua = initialize_lua(script_base)?;
     let script_table: LuaTable = lua.load(script_text).eval()?;
+    let generate: LuaFunction = script_table.get("generate")?;
+    let processed_value: LuaValue = generate.call((script_args, entries))?;
+
+    let processed_json = lua_to_json(processed_value)?;
+    let stdout = stdout().lock();
+    serde_json::to_writer(stdout, &processed_json)?;
 
     Ok(())
 }
