@@ -12,6 +12,7 @@ callfind = { workspace = true }
 clap = { workspace = true }
 common-qso = { workspace = true }
 compact_str = { workspace = true }
+mlua = { workspace = true }
 regex = { workspace = true }
 schope = { workspace = true }
 serde = { workspace = true }

@@ -1,6 +1,5 @@
 mod calculator;
 mod cli;
-mod qso;
 
 use std::{
     collections::{HashMap, HashSet, hash_map::Entry},
@@ -17,7 +16,6 @@ use tracing_subscriber::EnvFilter;
 use crate::{
     calculator::{Calculator, data::RecordSummary, error::ProcessorError},
     cli::Arguments,
-    qso::{error::QsoError, record::QsoRecord},
 };
 
 fn main() -> Result<()> {

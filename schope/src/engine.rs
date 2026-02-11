@@ -1,9 +1,17 @@
+mod serde;
+mod tableop;
+
 use std::path::Path;
 
 use mlua::prelude::*;
 use tracing::debug;
 
-use crate::library::{SchopeModule, datetime::DateTimeModule, jarl::JarlModule};
+use crate::{
+    engine::tableop::{ensure_list, ensure_map},
+    library::{SchopeModule, datetime::DateTimeModule, jarl::JarlModule},
+};
+
+pub use serde::lua_to_json;
 
 pub fn initialize_lua(script_base: &Path) -> Result<Lua, LuaError> {
     let lua = Lua::new();
@@ -51,8 +59,11 @@ fn set_package_path(lua: &Lua, base_path: &Path) -> Result<(), LuaError> {
 
 fn register_provided_features(lua: &Lua) -> Result<(), LuaError> {
     let globals = lua.globals();
-    let package: LuaTable = globals.get("package")?;
 
+    globals.set("list", lua.create_function(ensure_list)?)?;
+    globals.set("map", lua.create_function(ensure_map)?)?;
+
+    let package: LuaTable = globals.get("package")?;
     let package_preload: LuaTable = package.get("preload")?;
     package_preload.set(
         "datetime",

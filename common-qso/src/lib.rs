@@ -1,5 +1,5 @@
 pub mod band;
-pub mod contest;
+pub mod exchange;
 pub mod error;
 pub mod record;
 

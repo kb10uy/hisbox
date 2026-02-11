@@ -1,4 +1,4 @@
-use common_qso::contest::QsoExchanges;
+use common_qso::exchange::QsoExchanges;
 use compact_str::CompactString;
 use mlua::prelude::*;
 

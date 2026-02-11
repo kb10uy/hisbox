@@ -1,18 +1,22 @@
 mod cli;
 mod data;
 
-use std::{fs::read_to_string, sync::LazyLock};
+use std::{fs::read_to_string, process::exit, sync::LazyLock};
 
 use adif_reader::read_adi;
 use anyhow::Result;
 use callfind::grid_locator::GridLocator;
 use clap::Parser;
-use common_qso::{contest::QsoExchanges, record::QsoRecord};
+use common_qso::{exchange::QsoExchanges, record::QsoRecord};
 use compact_str::ToCompactString;
+use mlua::prelude::*;
 use regex::Regex;
-use schope::data::{exchange::Exchange, misc::Misc, record::Record};
+use schope::{
+    data::{misc::Misc, qsl_card::QslCardEntry},
+    engine::initialize_lua,
+};
 use time::UtcOffset;
-use tracing::{Level, span, warn};
+use tracing::{Level, error, span, warn};
 use tracing_subscriber::EnvFilter;
 
 use crate::{
@@ -37,6 +41,7 @@ fn main() -> Result<()> {
     let instruments = read_items_from_tomls::<Instrument>(args.instruments_files);
     let operations = read_items_from_tomls::<Operation>(args.operations_files);
 
+    let mut entries = Vec::with_capacity(adif.records().len());
     for (i, record) in adif.records().iter().enumerate() {
         let span = span!(Level::ERROR, "record_process", index = i);
         let _enter = span.enter();
@@ -73,17 +78,29 @@ fn main() -> Result<()> {
             .and_then(|o| o.location.lnglat)
             .and_then(|(lng, lat)| GridLocator::from_lnglat(lng, lat).ok()));
 
-        let schope_record: Record = qso_record.into();
-        let schope_exchange: Exchange = qso_exchanges.into();
-        let schope_misc = Misc {
-            antenna: instrument.map(|i| i.antenna.to_compact_string()),
-            power,
-            operator: operation.map(|o| o.operator.to_compact_string()),
-            address: operation.map(|o| o.location.address.to_compact_string()),
-            grid,
-            manager,
-        };
+        entries.push(QslCardEntry {
+            qso: qso_record.into(),
+            exchange: qso_exchanges.into(),
+            misc: Misc {
+                antenna: instrument.map(|i| i.antenna.to_compact_string()),
+                power,
+                operator: operation.map(|o| o.operator.to_compact_string()),
+                address: operation.map(|o| o.location.address.to_compact_string()),
+                grid,
+                manager,
+            },
+        });
     }
+
+    let script_path = args.processor_file.canonicalize()?;
+    let script_text = read_to_string(&script_path)?;
+    let Some(script_base) = script_path.parent() else {
+        error!("script path is invalid");
+        exit(1);
+    };
+
+    let lua = initialize_lua(script_base)?;
+    let script_table: LuaTable = lua.load(script_text).eval()?;
 
     Ok(())
 }

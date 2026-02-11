@@ -10,6 +10,7 @@ callfind = { workspace = true }
 common-qso = { workspace = true }
 compact_str = { workspace = true }
 mlua = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
 time = { workspace = true }
 tracing = { workspace = true }
