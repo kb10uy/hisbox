@@ -4,28 +4,31 @@ use mlua::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Exchange {
-    pub tx_report: CompactString,
-    pub tx_number: CompactString,
-    pub rx_report: CompactString,
-    pub rx_number: CompactString,
+    pub tx_report: Option<CompactString>,
+    pub tx_number: Option<CompactString>,
+    pub rx_report: Option<CompactString>,
+    pub rx_number: Option<CompactString>,
 }
 
-impl LuaUserData for Exchange {
-    fn add_fields<F: LuaUserDataFields<Self>>(fields: &mut F) {
-        fields.add_field_method_get("tx_report", |_, this| Ok(this.tx_report.to_string()));
-        fields.add_field_method_get("tx_number", |_, this| Ok(this.tx_number.to_string()));
-        fields.add_field_method_get("rx_report", |_, this| Ok(this.rx_report.to_string()));
-        fields.add_field_method_get("rx_number", |_, this| Ok(this.rx_number.to_string()));
+impl IntoLua for Exchange {
+    fn into_lua(self, lua: &Lua) -> LuaResult<LuaValue> {
+        let table = lua.create_table()?;
+        table.set("tx_report", self.tx_report.map(|s| s.to_string()))?;
+        table.set("tx_number", self.tx_number.map(|s| s.to_string()))?;
+        table.set("rx_report", self.rx_report.map(|s| s.to_string()))?;
+        table.set("rx_number", self.rx_number.map(|s| s.to_string()))?;
+
+        Ok(LuaValue::Table(table))
     }
 }
 
 impl From<QsoExchanges> for Exchange {
     fn from(value: QsoExchanges) -> Self {
         Exchange {
-            tx_report: value.sent.report.unwrap_or_default(),
-            tx_number: value.sent.number.unwrap_or_default(),
-            rx_report: value.received.report.unwrap_or_default(),
-            rx_number: value.received.number.unwrap_or_default(),
+            tx_report: value.sent.report,
+            tx_number: value.sent.number,
+            rx_report: value.received.report,
+            rx_number: value.received.number,
         }
     }
 }

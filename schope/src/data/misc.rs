@@ -12,18 +12,16 @@ pub struct Misc {
     pub manager: Option<CompactString>,
 }
 
-impl LuaUserData for Misc {
-    fn add_fields<F: LuaUserDataFields<Self>>(fields: &mut F) {
-        fields.add_field_method_get("antenna", |_, this| {
-            Ok(this.antenna.as_ref().map(ToString::to_string))
-        });
-        fields.add_field_method_get("power", |_, this| Ok(this.power));
-        fields.add_field_method_get("operator", |_, this| {
-            Ok(this.operator.as_ref().map(ToString::to_string))
-        });
-        fields.add_field_method_get("address", |_, this| {
-            Ok(this.address.as_ref().map(ToString::to_string))
-        });
-        fields.add_field_method_get("grid", |_, this| Ok(this.grid.map(|s| s.to_string())));
+impl IntoLua for Misc {
+    fn into_lua(self, lua: &Lua) -> LuaResult<LuaValue> {
+        let table = lua.create_table()?;
+        table.set("antenna", self.antenna.map(|s| s.to_string()))?;
+        table.set("power", self.power)?;
+        table.set("operator", self.operator.map(|s| s.to_string()))?;
+        table.set("address", self.address.map(|s| s.to_string()))?;
+        table.set("grid", self.grid.map(|s| s.to_string()))?;
+        table.set("manager", self.manager.map(|s| s.to_string()))?;
+
+        Ok(LuaValue::Table(table))
     }
 }
