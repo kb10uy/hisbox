@@ -89,6 +89,7 @@ fn main() -> Result<()> {
             exchange: qso_exchanges.into(),
             misc: Misc {
                 antenna: instrument.map(|i| i.antenna.to_compact_string()),
+                rig: instrument.map(|i| i.rig.to_compact_string()),
                 power,
                 operator: operation.map(|o| o.operator.to_compact_string()),
                 address: operation.map(|o| o.location.address.to_compact_string()),
