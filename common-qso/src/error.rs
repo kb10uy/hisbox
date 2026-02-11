@@ -1,7 +1,9 @@
+use num::traits::ParseFloatError;
+
 use thiserror::Error as ThisError;
 use time::error::Parse as TimeParseError;
 
-use crate::qso::band::InvalidBand;
+use crate::band::InvalidBand;
 
 #[derive(Debug, ThisError)]
 pub enum QsoError {
@@ -13,4 +15,7 @@ pub enum QsoError {
 
     #[error("band parse error")]
     BandParse(#[from] InvalidBand),
+
+    #[error("frequency parse error: {0}")]
+    FrequencyParse(ParseFloatError),
 }

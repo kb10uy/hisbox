@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
-use clap::Parser;
+use adif_reader::LengthMode;
+use clap::{Parser, ValueEnum};
 
 #[derive(Debug, Clone, Parser)]
 #[command(version, author, about, long_about)]
@@ -18,4 +19,32 @@ pub struct Arguments {
     /// Specify operations definition file.
     #[clap(short, long = "operations")]
     pub operations_files: Vec<PathBuf>,
+
+    /// Enable lenient length count for ADI file.
+    /// Pedantic ADI file must not contain non-ASCII characters.
+    #[clap(short, long = "lenient")]
+    pub lenient_length: Option<LenientMode>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
+pub enum LenientMode {
+    /// Count by bytes.
+    #[default]
+    Bytes,
+
+    /// Count by codepoints.
+    Codepoints,
+
+    /// Count by grapheme clusters.
+    Graphemes,
+}
+
+impl From<LenientMode> for LengthMode {
+    fn from(value: LenientMode) -> Self {
+        match value {
+            LenientMode::Bytes => LengthMode::Bytes,
+            LenientMode::Codepoints => LengthMode::Codepoints,
+            LenientMode::Graphemes => LengthMode::Graphemes,
+        }
+    }
 }

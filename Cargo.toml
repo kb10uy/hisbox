@@ -1,6 +1,14 @@
 [workspace]
 resolver = "3"
-members = ["jelgen", "adif-reader", "adif2json", "callfind", "qcgen", "schope"]
+members = [
+  "jelgen",
+  "adif-reader",
+  "adif2json",
+  "callfind",
+  "qcgen",
+  "schope",
+  "common-qso",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -17,6 +25,7 @@ clap = { version = "4.5.54", features = ["derive"] }
 compact_str = "0.9.0"
 itertools = "0.14.0"
 mlua = { version = "0.11.5", features = ["vendored", "lua54", "serde", "send"] }
+num = "0.4.3"
 regex = "1.12.2"
 roxmltree = "0.21.1"
 serde = { version = "1.0.228", features = ["derive"] }

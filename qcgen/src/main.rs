@@ -3,6 +3,7 @@ mod data;
 
 use std::{collections::HashMap, fs::read_to_string, path::Path, process::exit};
 
+use adif_reader::read_adi;
 use anyhow::Result;
 use clap::Parser;
 use serde::de::DeserializeOwned;
@@ -23,15 +24,12 @@ fn main() -> Result<()> {
 
     let args = Arguments::parse();
 
+    let adi_text = read_to_string(args.adif_file)?;
+    let adif = read_adi(&adi_text, args.lenient_length.unwrap_or_default().into())?;
     let instruments = read_items_from_tomls::<Instrument>(args.instruments_files);
     let operations = read_items_from_tomls::<Operation>(args.operations_files);
 
-    for instrument in instruments {
-        println!("{instrument:?}");
-    }
-    for operation in operations {
-        println!("{operation:?}");
-    }
+    for record in adif.records() {}
 
     Ok(())
 }

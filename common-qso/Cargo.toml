@@ -1,0 +1,13 @@
+[package]
+name = "common-qso"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+adif-reader = { workspace = true }
+compact_str = { workspace = true }
+num = { workspace = true }
+thiserror = { workspace = true }
+time = { workspace = true }

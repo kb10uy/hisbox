@@ -1,5 +1,5 @@
 use callfind::grid_locator::GridLocator;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Instrument {
