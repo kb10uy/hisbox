@@ -3,7 +3,7 @@ use std::path::Path;
 use mlua::prelude::*;
 use tracing::debug;
 
-use crate::library::{SchopeModule, jarl::Jarl};
+use crate::library::{SchopeModule, datetime::DateTimeModule, jarl::JarlModule};
 
 pub fn initialize_lua(script_base: &Path) -> Result<Lua, LuaError> {
     let lua = Lua::new();
@@ -54,7 +54,14 @@ fn register_provided_features(lua: &Lua) -> Result<(), LuaError> {
     let package: LuaTable = globals.get("package")?;
 
     let package_preload: LuaTable = package.get("preload")?;
-    package_preload.set("jarl", lua.create_function(Jarl::create_module_table)?)?;
+    package_preload.set(
+        "datetime",
+        lua.create_function(DateTimeModule::create_module_table)?,
+    )?;
+    package_preload.set(
+        "jarl",
+        lua.create_function(JarlModule::create_module_table)?,
+    )?;
 
     Ok(())
 }

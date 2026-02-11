@@ -10,7 +10,6 @@ use std::{
 use adif_reader::{document::Record, read_adi};
 use anyhow::Result;
 use clap::Parser;
-use mlua::prelude::*;
 use time::UtcOffset;
 use tracing::{Level, info, instrument, span, warn};
 use tracing_subscriber::EnvFilter;

@@ -3,15 +3,15 @@ use mlua::prelude::*;
 use crate::library::SchopeModule;
 
 #[derive(Debug)]
-pub struct Jarl {}
+pub struct JarlModule {}
 
-impl Jarl {
+impl JarlModule {
     pub fn example() -> i64 {
         1
     }
 }
 
-impl SchopeModule for Jarl {
+impl SchopeModule for JarlModule {
     fn create_module_table(lua: &Lua, _: LuaMultiValue) -> Result<LuaTable, LuaError> {
         let t = lua.create_table()?;
 

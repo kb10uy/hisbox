@@ -1,61 +1,153 @@
-use rhai::{CustomType, EvalAltResult, Module, export_module, plugin::*};
+use mlua::prelude::*;
 use time::{
-    OffsetDateTime, UtcOffset, error::Parse as TimeParseError,
-    format_description::well_known::Rfc3339,
+    Date, OffsetDateTime, Time, UtcOffset,
+    format_description::{
+        BorrowedFormatItem, parse as format_description_parse, well_known::Rfc3339,
+    },
+    macros::format_description,
 };
+
+use crate::library::SchopeModule;
+
+const DATE_FORMAT: &[BorrowedFormatItem] = format_description!("[year]-[month]-[day]");
+const TIME_FORMAT: &[BorrowedFormatItem] = format_description!("[hour]:[minute]:[second]");
+const OFFSET_FORMAT: &[BorrowedFormatItem] = format_description!("[offset_hour]:[offset_minute]");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
-pub struct SchopDateTime(OffsetDateTime);
+pub struct SchopeDateTime(OffsetDateTime);
 
-#[allow(clippy::wrong_self_convention)]
-impl SchopDateTime {
-    fn new(dt_str: &str) -> Result<SchopDateTime, Box<EvalAltResult>> {
-        Ok(OffsetDateTime::parse(dt_str, &Rfc3339)
-            .map_err(map_parse_error)?
-            .into())
+impl SchopeDateTime {
+    fn to_utc(self) -> Result<SchopeDateTime, LuaError> {
+        Ok(SchopeDateTime(self.0.to_offset(UtcOffset::UTC)))
     }
 
-    fn to_utc(&mut self) -> SchopDateTime {
-        self.0.to_offset(UtcOffset::UTC).into()
+    fn to_offset(self, offset_str: String) -> Result<SchopeDateTime, LuaError> {
+        let offset = UtcOffset::parse(&offset_str, OFFSET_FORMAT).map_err(LuaError::external)?;
+        Ok(SchopeDateTime(self.0.to_offset(offset)))
+    }
+
+    fn format(self, format: String) -> Result<String, LuaError> {
+        let format = format_description_parse(&format).map_err(LuaError::external)?;
+        let formatted = self.0.format(&format).map_err(LuaError::external)?;
+        Ok(formatted)
+    }
+
+    fn date_str(self) -> Result<String, LuaError> {
+        self.0.format(DATE_FORMAT).map_err(LuaError::external)
+    }
+
+    fn time_str(self) -> Result<String, LuaError> {
+        self.0.format(TIME_FORMAT).map_err(LuaError::external)
     }
 }
 
-impl CustomType for SchopDateTime {
-    fn build(mut builder: rhai::TypeBuilder<Self>) {
-        builder
-            .with_name("DateTime")
-            .with_fn("parse_datetime", Self::new)
-            .with_fn("to_utc", Self::to_utc);
+impl LuaUserData for SchopeDateTime {
+    fn add_methods<M: LuaUserDataMethods<Self>>(methods: &mut M) {
+        methods.add_method("to_utc", |_, this, ()| this.to_utc());
+        methods.add_method("to_offset", |_, this, o| this.to_offset(o));
+        methods.add_method("format", |_, this, f| this.format(f));
+
+        methods.add_meta_method(LuaMetaMethod::Eq, |_, lhs, rhs: LuaValue| {
+            let ud = rhs.as_userdata().ok_or(LuaError::UserDataTypeMismatch)?;
+            let rhs: LuaUserDataRef<SchopeDateTime> = ud.borrow()?;
+            Ok(*lhs == *rhs)
+        });
+        methods.add_meta_method(LuaMetaMethod::Lt, |_, lhs, rhs: LuaValue| {
+            let ud = rhs.as_userdata().ok_or(LuaError::UserDataTypeMismatch)?;
+            let rhs: LuaUserDataRef<SchopeDateTime> = ud.borrow()?;
+            Ok(*lhs < *rhs)
+        });
+        methods.add_meta_method(LuaMetaMethod::Le, |_, lhs, rhs: LuaValue| {
+            let ud = rhs.as_userdata().ok_or(LuaError::UserDataTypeMismatch)?;
+            let rhs: LuaUserDataRef<SchopeDateTime> = ud.borrow()?;
+            Ok(*lhs <= *rhs)
+        });
+    }
+
+    fn add_fields<F: LuaUserDataFields<Self>>(fields: &mut F) {
+        fields.add_field_method_get("year", |_, this| Ok(this.0.year()));
+        fields.add_field_method_get("month", |_, this| Ok(this.0.month() as u8));
+        fields.add_field_method_get("day", |_, this| Ok(this.0.day()));
+        fields.add_field_method_get("hour", |_, this| Ok(this.0.hour()));
+        fields.add_field_method_get("minute", |_, this| Ok(this.0.minute()));
+        fields.add_field_method_get("second", |_, this| Ok(this.0.second()));
+
+        fields.add_field_method_get("date_str", |_, this| this.date_str());
+        fields.add_field_method_get("time_str", |_, this| this.time_str());
     }
 }
 
-impl From<OffsetDateTime> for SchopDateTime {
+impl From<OffsetDateTime> for SchopeDateTime {
     fn from(value: OffsetDateTime) -> Self {
-        SchopDateTime(value)
+        SchopeDateTime(value)
     }
 }
 
-impl From<SchopDateTime> for OffsetDateTime {
-    fn from(value: SchopDateTime) -> Self {
+impl From<SchopeDateTime> for OffsetDateTime {
+    fn from(value: SchopeDateTime) -> Self {
         value.0
     }
 }
 
-fn map_parse_error(e: TimeParseError) -> Box<EvalAltResult> {
-    Box::new(EvalAltResult::ErrorSystem(
-        "failed to parse datetime str".into(),
-        e.into(),
-    ))
+pub struct DateTimeModule;
+
+impl DateTimeModule {
+    fn now_utc() -> Result<SchopeDateTime, LuaError> {
+        Ok(SchopeDateTime(OffsetDateTime::now_utc()))
+    }
+
+    fn now_local() -> Result<SchopeDateTime, LuaError> {
+        Ok(SchopeDateTime(
+            OffsetDateTime::now_local().map_err(LuaError::external)?,
+        ))
+    }
+
+    fn from_rfc3339(dt_str: String) -> Result<SchopeDateTime, LuaError> {
+        OffsetDateTime::parse(&dt_str, &Rfc3339)
+            .map(SchopeDateTime)
+            .map_err(LuaError::external)
+    }
+
+    fn from_parts_utc(date_str: String, time_str: String) -> Result<SchopeDateTime, LuaError> {
+        let date = Date::parse(&date_str, DATE_FORMAT).map_err(LuaError::external)?;
+        let time = Time::parse(&time_str, TIME_FORMAT).map_err(LuaError::external)?;
+        Ok(SchopeDateTime(OffsetDateTime::new_utc(date, time)))
+    }
+
+    fn from_parts_offset(
+        date_str: String,
+        time_str: String,
+        offset_str: String,
+    ) -> Result<SchopeDateTime, LuaError> {
+        let date = Date::parse(&date_str, DATE_FORMAT).map_err(LuaError::external)?;
+        let time = Time::parse(&time_str, TIME_FORMAT).map_err(LuaError::external)?;
+        let offset = UtcOffset::parse(&offset_str, OFFSET_FORMAT).map_err(LuaError::external)?;
+        Ok(SchopeDateTime(OffsetDateTime::new_in_offset(
+            date, time, offset,
+        )))
+    }
 }
 
-#[export_module]
-pub mod module {
-    pub type DateTime = SchopDateTime;
+impl SchopeModule for DateTimeModule {
+    fn create_module_table(lua: &Lua, _: LuaMultiValue) -> Result<LuaTable, LuaError> {
+        let t = lua.create_table()?;
 
-    pub fn parse_rfc3339(dt_str: &str) -> Result<SchopDateTime, String> {
-        Ok(OffsetDateTime::parse(dt_str, &Rfc3339)
-            .map_err(|_| "あああ".to_string())?
-            .into())
+        t.set("now_utc", lua.create_function(|_, ()| Self::now_utc())?)?;
+        t.set("now_local", lua.create_function(|_, ()| Self::now_local())?)?;
+        t.set(
+            "from_rfc3339",
+            lua.create_function(|_, s| Self::from_rfc3339(s))?,
+        )?;
+        t.set(
+            "from_parts_utc",
+            lua.create_function(|_, (d, t)| Self::from_parts_utc(d, t))?,
+        )?;
+        t.set(
+            "from_parts_offset",
+            lua.create_function(|_, (d, t, o)| Self::from_parts_offset(d, t, o))?,
+        )?;
+
+        Ok(t)
     }
 }

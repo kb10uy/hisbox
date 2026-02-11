@@ -6,6 +6,8 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+callfind = { workspace = true }
+compact_str = { workspace = true }
 mlua = { workspace = true }
 thiserror = { workspace = true }
 time = { workspace = true }
