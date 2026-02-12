@@ -12,76 +12,84 @@
   features: ("cv01": 2),
 )
 
-#let bureau_call = "JA1RL"
-#let call = "JA1RL/0"
-#let date = "2026-01-25"
-#let time = "12:00"
-#let timezone = "JST"
-#let report = "599"
-#let freq_mhz = 7.020
-#let mode = "CW"
+#let qsl_entries = ()
+#if "data_json" in sys.inputs {
+  qsl_entries = json(sys.inputs.data_json)
+}
 
-#box(width: 100%, height: 100%)[
-  // Bureau call
-  #place(top + left, dx: 10mm, dy: 79mm)[
-    #set text(size: 9mm)
-    #let frame_x = 1.5mm
-    #let frame_y = 1.5mm
-    #rotate(-90deg, origin: top + left)[
-      #block(width: 70mm, height: 9mm)[
-        #for (i, c) in bureau_call.clusters().enumerate() [
-          #place(top + left, dx: frame_x + i * 9mm, dy: frame_y)[#c]
+#for entry in qsl_entries [
+  #let bureau_call = entry.bureau_call
+  #let call = entry.call
+  #let date = entry.date
+  #let time = entry.time
+  #let timezone = entry.timezone
+  #let report = entry.report
+  #let freq_str = entry.freq
+  #let mode = entry.mode
+
+  #box(width: 100%, height: 100%)[
+    // Bureau call
+    #place(top + left, dx: 10mm, dy: 79mm)[
+      #set text(size: 9mm)
+      #let frame_x = 1.5mm
+      #let frame_y = 1.5mm
+      #rotate(-90deg, origin: top + left)[
+        #block(width: 70mm, height: 9mm)[
+          #for (i, c) in bureau_call.clusters().enumerate() [
+            #place(top + left, dx: frame_x + i * 9mm, dy: frame_y)[#c]
+          ]
         ]
       ]
     ]
-  ]
 
-  // Call
-  #place(top + left, dx: 43mm, dy: 9mm)[
-    #text(size: 7mm, call)
-  ]
+    // Call
+    #place(top + left, dx: 43mm, dy: 9mm)[
+      #text(size: 7mm, call)
+    ]
 
-  // Date
-  #place(top + left, dx: 26.5mm, dy: 25mm)[
-    #set text(size: 6mm)
-    #box(width: 44mm, height: 19mm, clip: true, align(center + horizon, date))
-  ]
+    // Date
+    #place(top + left, dx: 26.5mm, dy: 25mm)[
+      #set text(size: 6mm)
+      #box(width: 44mm, height: 19mm, clip: true, align(center + horizon, date))
+    ]
 
-  // Time
-  #place(top + left, dx: 70.5mm, dy: 25mm)[
-    // JST/UTC mark
-    #if timezone == "JST" {
-      place(dx: 3mm, dy: 1.5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
-    } else if timezone == "UTC" {
-      place(dx: 3mm, dy: 5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
-    }
+    // Time
+    #place(top + left, dx: 70.5mm, dy: 25mm)[
+      // JST/UTC mark
+      #if timezone == "JST" {
+        place(dx: 3mm, dy: 1.5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
+      } else if timezone == "UTC" {
+        place(dx: 3mm, dy: 5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
+      }
 
-    // HH:MM
-    #set text(size: 4mm)
-    #place(top + left, dy: 8mm, box(width: 15mm, height: 11mm, clip: true, align(center + horizon, time)))
-  ]
+      // HH:MM
+      #set text(size: 4mm)
+      #place(top + left, dy: 8mm, box(width: 15mm, height: 11mm, clip: true, align(center + horizon, time.slice(0, 5))))
+    ]
 
-  // Report
-  #place(top + left, dx: 85mm, dy: 25mm)[
-    #set text(size: 6mm)
-    #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, report))
-  ]
+    // Report
+    #place(top + left, dx: 85mm, dy: 25mm)[
+      #set text(size: 6mm)
+      #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, report))
+    ]
 
-  // MHz
-  #place(top + left, dx: 100mm, dy: 25mm)[
-    #let integer = calc.trunc(freq_mhz)
-    #let fractional = calc.fract(freq_mhz)
+    // MHz
+    #place(top + left, dx: 100mm, dy: 25mm)[
+      #let freq_mhz = float(freq_str)
+      #let integer = calc.trunc(freq_mhz)
+      #let fractional = calc.fract(freq_mhz)
 
-    #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, box(width: auto, align(top + left, stack(
-      spacing: 1mm,
-      text(size: 6mm, str(integer)),
-      text(size: 4mm, strfmt("{:0.3}", fractional).slice(1)),
-    )))))
-  ]
+      #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, box(width: auto, align(top + left, stack(
+        spacing: 1mm,
+        text(size: 6mm, str(integer)),
+        text(size: 4mm, strfmt("{:0.3}", fractional).slice(1)),
+      )))))
+    ]
 
-  // Mode
-  #place(top + left, dx: 115mm, dy: 25mm)[
-    #set text(size: 6mm)
-    #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, mode))
+    // Mode
+    #place(top + left, dx: 115mm, dy: 25mm)[
+      #set text(size: 6mm)
+      #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, mode))
+    ]
   ]
 ]

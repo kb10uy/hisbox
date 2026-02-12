@@ -29,14 +29,14 @@ local function generate(args, entries)
             date = datetime.date_str,
             time = datetime.time_str,
             timezone = timezone,
-            report = e.exchange.tx_report,
+            report = e.exchange.tx_report or "",
             freq = e.qso.freq_str,
             mode = e.qso.mode,
             rig = e.info.instrument.rig or "",
             power = e.info.instrument.power and tostring(e.info.instrument.power) or "",
             antenna = e.info.instrument.antenna or "",
-            location = e.info.operation.address,
-            operator = e.info.operation.operator,
+            location = e.info.operation.address or "",
+            operator = e.info.operation.operator or "",
             received = e.info.card.received,
         })
     end
