@@ -1,4 +1,7 @@
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::{
+    cmp::Ordering,
+    fmt::{Display, Formatter, Result as FmtResult},
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -18,6 +21,33 @@ impl Prefix {
             Prefix::TwoSpecified(p1, p2) => c1 == *p1 && c2 == *p2,
             Prefix::ThreeRange(p1, p2, (p3s, p3e)) => {
                 c1 == *p1 && c2 == *p2 && (*p3s..=*p3e).contains(&c3)
+            }
+        }
+    }
+
+    pub fn range_cmp(&self, c1: u8, c2: u8, c3: u8) -> Ordering {
+        match self {
+            Prefix::OneAll(p1) => p1.cmp(&c1),
+            Prefix::TwoRange(p1, (p2s, p2e)) => p1.cmp(&c1).then_with(|| {
+                if (*p2s..=*p2e).contains(&c2) {
+                    Ordering::Equal
+                } else if p2s < &c2 {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                }
+            }),
+            Prefix::TwoSpecified(p1, p2) => p1.cmp(&c1).then(p2.cmp(&c2)),
+            Prefix::ThreeRange(p1, p2, (p3s, p3e)) => {
+                p1.cmp(&c1).then(p2.cmp(&c2)).then_with(|| {
+                    if (*p3s..=*p3e).contains(&c3) {
+                        Ordering::Equal
+                    } else if p3s < &c3 {
+                        Ordering::Less
+                    } else {
+                        Ordering::Greater
+                    }
+                })
             }
         }
     }

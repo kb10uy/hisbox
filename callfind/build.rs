@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     collections::HashMap,
     env::var,
     fs::{File, read_to_string},
@@ -25,14 +26,14 @@ fn main() {
     .expect("failed to write");
     for (p, i) in prefixes {
         let prefix_str = match p {
-            Prefix::ByOneAll(p1) => format!("crate::callsign::prefix::Prefix::OneAll({p1})"),
-            Prefix::ByTwoRange(p1, (p2s, p2e)) => {
+            Prefix::OneAll(p1) => format!("crate::callsign::prefix::Prefix::OneAll({p1})"),
+            Prefix::TwoRange(p1, (p2s, p2e)) => {
                 format!("crate::callsign::prefix::Prefix::TwoRange({p1}, ({p2s}, {p2e}))")
             }
-            Prefix::ByTwoSpecified(p1, p2) => {
+            Prefix::TwoSpecified(p1, p2) => {
                 format!("crate::callsign::prefix::Prefix::TwoSpecified({p1}, {p2})")
             }
-            Prefix::ByThreeRange(p1, p2, (p3s, p3e)) => {
+            Prefix::ThreeRange(p1, p2, (p3s, p3e)) => {
                 format!("crate::callsign::prefix::Prefix::ThreeRange({p1}, {p2}, ({p3s}, {p3e}))")
             }
         };
@@ -47,21 +48,58 @@ fn main() {
     writeln!(writer, r#"];"#).expect("failed to write");
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Prefix {
-    ByOneAll(u8),
-    ByTwoRange(u8, (u8, u8)),
-    ByTwoSpecified(u8, u8),
-    ByThreeRange(u8, u8, (u8, u8)),
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Prefix {
+    OneAll(u8),
+    TwoRange(u8, (u8, u8)),
+    TwoSpecified(u8, u8),
+    ThreeRange(u8, u8, (u8, u8)),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum PrefixChar {
-    Full,
-    Range(u8, u8),
+impl Prefix {
+    pub fn range_order(&self, other: &Prefix) -> Ordering {
+        match (self, other) {
+            (Prefix::OneAll(l), Prefix::OneAll(r)) => l.cmp(r),
+            (Prefix::OneAll(l), Prefix::TwoRange(r, _)) => l.cmp(r),
+            (Prefix::OneAll(l), Prefix::TwoSpecified(r, _)) => l.cmp(r),
+            (Prefix::OneAll(l), Prefix::ThreeRange(r, _, _)) => l.cmp(r),
+            (Prefix::TwoRange(l1, l2), Prefix::TwoRange(r1, r2)) => {
+                l1.cmp(r1).then(l2.0.cmp(&r2.0))
+            }
+            (Prefix::TwoRange(l1, l2), Prefix::TwoSpecified(r1, r2)) => {
+                l1.cmp(r1).then(l2.0.cmp(r2))
+            }
+            (Prefix::TwoRange(l1, l2), Prefix::ThreeRange(r1, r2, _)) => {
+                l1.cmp(r1).then(l2.0.cmp(r2))
+            }
+            (Prefix::TwoSpecified(l1, l2), Prefix::TwoSpecified(r1, r2)) => {
+                l1.cmp(r1).then(l2.cmp(r2))
+            }
+            (Prefix::TwoSpecified(l1, l2), Prefix::ThreeRange(r1, r2, _)) => {
+                l1.cmp(r1).then(l2.cmp(r2))
+            }
+            (Prefix::ThreeRange(l1, l2, l3), Prefix::ThreeRange(r1, r2, r3)) => {
+                l1.cmp(r1).then(l2.cmp(r2)).then(l3.cmp(r3))
+            }
+
+            // (Prefix::TwoRange(l, _), Prefix::OneAll(r)) => todo!(),
+            // (Prefix::TwoSpecified(_, _), Prefix::OneAll(_)) => todo!(),
+            // (Prefix::TwoSpecified(_, _), Prefix::TwoRange(_, _)) => todo!(),
+            // (Prefix::ThreeRange(_, _, _), Prefix::OneAll(_)) => todo!(),
+            // (Prefix::ThreeRange(_, _, _), Prefix::TwoRange(_, _)) => todo!(),
+            // (Prefix::ThreeRange(_, _, _), Prefix::TwoSpecified(_, _)) => todo!(),
+            _ => other.range_order(self).reverse(),
+        }
+    }
 }
 
 fn construct_values() -> (Vec<(Prefix, usize)>, Vec<String>) {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    enum PrefixChar {
+        Full,
+        Range(u8, u8),
+    }
+
     let tsv = read_to_string("prefixes.tsv").expect("prefixes.tsv must exist");
 
     let mut area_names = HashMap::new();
@@ -121,22 +159,22 @@ fn construct_values() -> (Vec<(Prefix, usize)>, Vec<String>) {
             .collect();
 
         if p2_range_chunks.len() == 1 && p2_range_chunks[0].1.len() == 26 {
-            entries_second.insert(Prefix::ByOneAll(group_p1), group_area);
+            entries_second.insert(Prefix::OneAll(group_p1), group_area);
         } else {
             for ((_, chunk_tr), entries) in p2_range_chunks {
                 let prefix = if entries.len() == 1 {
                     let chunk_p2 = entries[0].0.1;
                     match chunk_tr {
-                        PrefixChar::Full => Prefix::ByTwoSpecified(group_p1, chunk_p2),
+                        PrefixChar::Full => Prefix::TwoSpecified(group_p1, chunk_p2),
                         PrefixChar::Range(s3s, s3e) => {
-                            Prefix::ByThreeRange(group_p1, chunk_p2, (s3s, s3e))
+                            Prefix::ThreeRange(group_p1, chunk_p2, (s3s, s3e))
                         }
                     }
                 } else {
                     let p2s = entries.first().expect("must have at least 2 elements").0.1;
                     let p2e = entries.last().expect("must have at least 2 elements").0.1;
                     assert!(chunk_tr == PrefixChar::Full, "chunk range is not full");
-                    Prefix::ByTwoRange(group_p1, (p2s, p2e))
+                    Prefix::TwoRange(group_p1, (p2s, p2e))
                 };
                 entries_second.insert(prefix, group_area);
             }
@@ -145,8 +183,19 @@ fn construct_values() -> (Vec<(Prefix, usize)>, Vec<String>) {
 
     let mut sorted_prefixes: Vec<_> = entries_second.into_iter().collect();
     let mut sorted_areas: Vec<_> = area_names.into_iter().map(|(n, i)| (i, n)).collect();
-    sorted_prefixes.sort();
+    sorted_prefixes.sort_by(|l, r| l.0.range_order(&r.0));
     sorted_areas.sort();
+
+    // overwrapping prefix must not exist
+    if let Some(window) = sorted_prefixes
+        .windows(2)
+        .find(|w| w[0].0.range_order(&w[1].0).is_eq())
+    {
+        panic!(
+            "overwrapping prefix found: ({:?}, {:?})",
+            window[0].0, window[1].0
+        );
+    }
 
     (
         sorted_prefixes,
