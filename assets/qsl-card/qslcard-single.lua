@@ -32,6 +32,12 @@ local function generate(args, entries)
             report = e.exchange.tx_report,
             freq = e.qso.freq_str,
             mode = e.qso.mode,
+            rig = e.info.instrument.rig or "",
+            power = e.info.instrument.power and tostring(e.info.instrument.power) or "",
+            antenna = e.info.instrument.antenna or "",
+            location = e.info.operation.address,
+            operator = e.info.operation.operator,
+            received = e.info.card.received,
         })
     end
 

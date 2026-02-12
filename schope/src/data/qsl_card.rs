@@ -34,7 +34,7 @@ impl IntoLua for QslInfo {
         let table = lua.create_table()?;
         table.set("instrument", self.instrument)?;
         table.set("operation", self.operation)?;
-        table.set("manager", self.card)?;
+        table.set("card", self.card)?;
 
         Ok(LuaValue::Table(table))
     }
