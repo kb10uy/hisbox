@@ -1,4 +1,0 @@
-fn initialize(params) {
-
-}
-
