@@ -4,6 +4,7 @@ use adif_reader::LengthMode;
 use clap::{Parser, ValueEnum};
 use compact_str::{CompactString, ToCompactString};
 
+/// Generates JSON data for QSL cards.
 #[derive(Debug, Clone, Parser)]
 #[command(version, author, about, long_about)]
 pub struct Arguments {
