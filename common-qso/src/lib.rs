@@ -1,6 +1,7 @@
 pub mod band;
-pub mod exchange;
 pub mod error;
+pub mod exchange;
+pub mod qsl;
 pub mod record;
 
 use adif_reader::document::Record;

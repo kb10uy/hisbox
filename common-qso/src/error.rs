@@ -13,4 +13,7 @@ pub enum QsoError {
 
     #[error("band parse error")]
     BandParse(#[from] InvalidBand),
+
+    #[error("QSL status parse error")]
+    QslParse,
 }

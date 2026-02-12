@@ -7,12 +7,16 @@ use adif_reader::read_adi;
 use anyhow::Result;
 use callfind::grid_locator::GridLocator;
 use clap::Parser;
-use common_qso::{exchange::QsoExchanges, record::QsoRecord};
+use common_qso::{
+    exchange::QsoExchanges,
+    qsl::{QslReceiveStatus, QslSendStatus, QslStatus},
+    record::QsoRecord,
+};
 use compact_str::ToCompactString;
 use mlua::prelude::*;
 use regex::Regex;
 use schope::{
-    data::qsl_card::{QslCardEntry, QslInfo},
+    data::qsl_card::{QslCard, QslCardEntry, QslInfo, QslInstrument, QslOperation},
     engine::{initialize_lua, lua_to_json},
 };
 use time::UtcOffset;
@@ -54,6 +58,7 @@ fn main() -> Result<()> {
 
         let qso_record = QsoRecord::new(record, UtcOffset::UTC)?;
         let qso_exchanges = QsoExchanges::new(record);
+        let qsl_status = QslStatus::new(record)?;
         let qso_power: Option<f64> = record.field("TX_PWR").and_then(|p| p.parse().ok());
 
         let mut instrument_key = args.instrument.as_deref();
@@ -88,13 +93,27 @@ fn main() -> Result<()> {
             qso: qso_record.into(),
             exchange: qso_exchanges.into(),
             info: QslInfo {
-                antenna: instrument.map(|i| i.antenna.to_compact_string()),
-                rig: instrument.map(|i| i.rig.to_compact_string()),
-                power,
-                operator: operation.map(|o| o.operator.to_compact_string()),
-                address: operation.map(|o| o.location.address.to_compact_string()),
-                grid,
-                manager,
+                instrument: QslInstrument {
+                    antenna: instrument.map(|i| i.antenna.to_compact_string()),
+                    rig: instrument.map(|i| i.rig.to_compact_string()),
+                    power,
+                },
+                operation: QslOperation {
+                    operator: operation.map(|o| o.operator.to_compact_string()),
+                    address: operation.map(|o| o.location.address.to_compact_string()),
+                    grid,
+                },
+                card: QslCard {
+                    should_send: matches!(
+                        qsl_status.send,
+                        Some(QslSendStatus::Queued | QslSendStatus::Requested),
+                    ),
+                    received: matches!(
+                        qsl_status.receive,
+                        Some(QslReceiveStatus::Confirmed | QslReceiveStatus::Verified)
+                    ),
+                    manager,
+                },
             },
         });
     }
