@@ -10,8 +10,8 @@ local function generate(args, entries)
         local datetime = e.qso.datetime
         local timezone = "UTC"
 
-        if e.misc.manager then
-            bureau_call = e.misc.manager
+        if e.info.manager then
+            bureau_call = e.info.manager
             via = true
         elseif call_suffix_index ~= nil then
             bureau_call = bureau_call:sub(1, call_suffix_index - 1)

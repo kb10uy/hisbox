@@ -12,7 +12,7 @@ use compact_str::ToCompactString;
 use mlua::prelude::*;
 use regex::Regex;
 use schope::{
-    data::{misc::Misc, qsl_card::QslCardEntry},
+    data::qsl_card::{QslCardEntry, QslInfo},
     engine::{initialize_lua, lua_to_json},
 };
 use time::UtcOffset;
@@ -87,7 +87,7 @@ fn main() -> Result<()> {
         entries.push(QslCardEntry {
             qso: qso_record.into(),
             exchange: qso_exchanges.into(),
-            misc: Misc {
+            info: QslInfo {
                 antenna: instrument.map(|i| i.antenna.to_compact_string()),
                 rig: instrument.map(|i| i.rig.to_compact_string()),
                 power,
