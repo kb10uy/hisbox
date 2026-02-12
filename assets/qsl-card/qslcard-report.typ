@@ -26,6 +26,7 @@
   #let report = entry.report
   #let freq_str = entry.freq
   #let mode = entry.mode
+  #let received = entry.received
 
   #box(width: 100%, height: 100%)[
     // Bureau call
@@ -91,5 +92,12 @@
       #set text(size: 6mm)
       #box(width: 14mm, height: 19mm, clip: true, align(center + horizon, mode))
     ]
+
+    // Pse/QSL/Tnx
+    #if received {
+      place(dx: 3mm, dy: 1.5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
+    } else {
+      place(dx: 3mm, dy: 5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
+    }
   ]
 ]
