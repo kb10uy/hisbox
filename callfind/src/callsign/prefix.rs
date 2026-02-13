@@ -28,27 +28,23 @@ impl Prefix {
     pub fn range_cmp(&self, c1: u8, c2: u8, c3: u8) -> Ordering {
         match self {
             Prefix::OneAll(p1) => p1.cmp(&c1),
-            Prefix::TwoRange(p1, (p2s, p2e)) => p1.cmp(&c1).then_with(|| {
-                if (*p2s..=*p2e).contains(&c2) {
-                    Ordering::Equal
-                } else if p2s < &c2 {
-                    Ordering::Less
-                } else {
-                    Ordering::Greater
-                }
-            }),
+            Prefix::TwoRange(p1, p2) => p1.cmp(&c1).then(Self::point_cmp(c2, *p2).reverse()),
             Prefix::TwoSpecified(p1, p2) => p1.cmp(&c1).then(p2.cmp(&c2)),
-            Prefix::ThreeRange(p1, p2, (p3s, p3e)) => {
-                p1.cmp(&c1).then(p2.cmp(&c2)).then_with(|| {
-                    if (*p3s..=*p3e).contains(&c3) {
-                        Ordering::Equal
-                    } else if p3s < &c3 {
-                        Ordering::Less
-                    } else {
-                        Ordering::Greater
-                    }
-                })
-            }
+            Prefix::ThreeRange(p1, p2, p3) => p1
+                .cmp(&c1)
+                .then(p2.cmp(&c2))
+                .then(Self::point_cmp(c3, *p3).reverse()),
+        }
+    }
+
+    fn point_cmp(x: u8, (l, r): (u8, u8)) -> Ordering {
+        assert!(l <= r);
+        if (l..=r).contains(&x) {
+            Ordering::Equal
+        } else if x < l {
+            Ordering::Less
+        } else {
+            Ordering::Greater
         }
     }
 }
