@@ -27,6 +27,11 @@
   #let freq_str = entry.freq
   #let mode = entry.mode
   #let received = entry.received
+  #let rig = entry.rig
+  #let power = entry.power
+  #let antenna = entry.antenna
+  #let operator = entry.operator
+  #let location = entry.location
 
   #box(width: 100%, height: 100%)[
     // Bureau call
@@ -95,9 +100,29 @@
 
     // Pse/QSL/Tnx
     #if received {
-      place(dx: 3mm, dy: 1.5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
+      place(dx: 65.5mm, dy: 46.5mm, rect(fill: black, width: 3mm, height: 3mm))
     } else {
-      place(dx: 3mm, dy: 5mm, rect(fill: black, width: 2.5mm, height: 2.5mm))
+      place(dx: 40.7mm, dy: 46.5mm, rect(fill: black, width: 3mm, height: 3mm))
     }
+
+    // Rig, Power
+    #place(top + left, dx: 40mm, dy: 52mm)[
+      #text(size: 4mm, rig)
+    ]
+    #place(top + left, dx: 105mm, dy: 52mm)[
+      #text(size: 4mm, str(int(float(power))))
+    ]
+    // Antenna
+    #place(top + left, dx: 40mm, dy: 56.5mm)[
+      #text(size: 4mm, antenna)
+    ]
+    // Operator
+    #place(top + left, dx: 40mm, dy: 70mm)[
+      #text(size: 4mm, operator)
+    ]
+    // Location
+    #place(top + left, dx: 40mm, dy: 75mm)[
+      #text(size: 4mm, location)
+    ]
   ]
 ]
