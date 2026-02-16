@@ -46,7 +46,7 @@ impl FromStr for QslSendStatus {
             "N" => Ok(QslSendStatus::NotSent),
             "Y" => Ok(QslSendStatus::Sent),
             "R" => Ok(QslSendStatus::Requested),
-            "V" => Ok(QslSendStatus::Queued),
+            "Q" => Ok(QslSendStatus::Queued),
             _ => Err(QsoError::QslParse),
         }
     }
