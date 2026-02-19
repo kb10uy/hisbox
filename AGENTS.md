@@ -10,7 +10,7 @@
 - End with period expect for listings
 - Use capital letter at the beginning of the sentence
 
-### Commit message, issue and PR
+### Commit Message, Issue and PR
 
 - Use imperative mood
 - _Do not_ use conventional commit message
@@ -29,3 +29,8 @@
 ### Documentations for Humans
 
 - Use English or Japanese
+
+### File Arrangement
+
+- Example files should be placed under `assets/`
+- Create subdirectories if necessary
