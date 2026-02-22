@@ -8,7 +8,7 @@ use tracing::debug;
 
 use crate::{
     engine::tableop::{ensure_list, ensure_map},
-    library::{SchopeModule, datetime::DateTimeModule, jarl::JarlModule},
+    library::{SchopeModule, datetime::DateTimeModule, jarl::JarlModule, prompt::PromptModule},
 };
 
 pub use serde::lua_to_json;
@@ -68,6 +68,10 @@ fn register_provided_features(lua: &Lua) -> Result<(), LuaError> {
     package_preload.set(
         "datetime",
         lua.create_function(DateTimeModule::create_module_table)?,
+    )?;
+    package_preload.set(
+        "prompt",
+        lua.create_function(PromptModule::create_module_table)?,
     )?;
     package_preload.set(
         "jarl",

@@ -9,6 +9,7 @@ authors.workspace = true
 callfind = { workspace = true }
 common-qso = { workspace = true }
 compact_str = { workspace = true }
+dialoguer = { workspace = true }
 mlua = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

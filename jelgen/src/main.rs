@@ -1,10 +1,12 @@
 mod cli;
+mod writer;
 
 use std::fs::read_to_string;
 
 use adif_reader::read_adi;
 use anyhow::Result;
 use clap::Parser;
+use dialoguer::{Select, theme::ColorfulTheme};
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
@@ -19,9 +21,18 @@ fn main() -> Result<()> {
 
     let args = Arguments::parse();
 
+    /*
     let adi_text = read_to_string(args.adif_file)?;
     let adif = read_adi(&adi_text, args.lenient_length.unwrap_or_default().into())?;
     info!("{} records imported", adif.records().len());
+    */
+
+    let theme = ColorfulTheme::default();
+
+    let selected = Select::with_theme(&theme)
+        .with_prompt("hogehoge")
+        .items(["a", "b", "c"])
+        .interact()?;
 
     /*
     let processor = Calculator::initialize(args.processor_file, Default::default())?;
