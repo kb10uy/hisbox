@@ -10,4 +10,3 @@ callfind-core = { workspace = true }
 
 [build-dependencies]
 callfind-core = { workspace = true }
-itertools = { workspace = true }
