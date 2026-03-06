@@ -1,0 +1,13 @@
+[package]
+name = "callfind-data"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+callfind-core = { workspace = true }
+
+[build-dependencies]
+callfind-core = { workspace = true }
+itertools = { workspace = true }

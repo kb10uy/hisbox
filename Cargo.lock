@@ -125,23 +125,25 @@ name = "callfind"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "itertools",
- "quote",
- "serde",
- "serde_with",
- "thiserror",
+ "callfind-core",
+ "callfind-data",
 ]
 
 [[package]]
 name = "callfind-core"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "itertools",
- "quote",
  "serde",
  "serde_with",
  "thiserror",
+]
+
+[[package]]
+name = "callfind-data"
+version = "0.1.0"
+dependencies = [
+ "callfind-core",
+ "itertools",
 ]
 
 [[package]]

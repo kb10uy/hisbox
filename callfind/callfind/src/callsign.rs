@@ -1,7 +1,5 @@
-mod data;
-mod prefix;
-
-use crate::callsign::data::{AREA_NAMES, PREFIXES, UNASSIGNED_PREFIXES};
+pub use callfind_core::callsign::Prefix;
+use callfind_data::{AREA_NAMES, PREFIXES, UNASSIGNED_PREFIXES};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CallsignAssign {

@@ -4,6 +4,7 @@ members = [
   "jelgen",
   "adif-reader",
   "callfind/callfind-core",
+  "callfind/callfind-data",
   "callfind/callfind",
   "qcgen",
   "schope",
@@ -19,6 +20,8 @@ authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
 [workspace.dependencies]
 adif-reader = { path = "./adif-reader" }
 callfind = { path = "./callfind/callfind" }
+callfind-core = { path = "./callfind/callfind-core" }
+callfind-data = { path = "./callfind/callfind-data" }
 common-qso = { path = "./common-qso" }
 schope = { path = "./schope" }
 

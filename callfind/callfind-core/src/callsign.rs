@@ -37,11 +37,70 @@ impl Prefix {
         }
     }
 
+    pub fn range_order(&self, other: &Prefix) -> Ordering {
+        match (self, other) {
+            (Prefix::OneAll(l), Prefix::OneAll(r)) => l.cmp(r),
+            (Prefix::OneAll(l), Prefix::TwoRange(r, _)) => l.cmp(r),
+            (Prefix::OneAll(l), Prefix::TwoSpecified(r, _)) => l.cmp(r),
+            (Prefix::OneAll(l), Prefix::ThreeRange(r, _, _)) => l.cmp(r),
+            (Prefix::TwoRange(l1, l2), Prefix::TwoRange(r1, r2)) => {
+                l1.cmp(r1).then(Self::range_order_overwrap_cmp(*l2, *r2))
+            }
+            (Prefix::TwoRange(l1, l2), Prefix::TwoSpecified(r1, r2)) => {
+                l1.cmp(r1).then(Self::range_order_cmp(*r2, *l2).reverse())
+            }
+            (Prefix::TwoRange(l1, l2), Prefix::ThreeRange(r1, r2, _)) => {
+                l1.cmp(r1).then(Self::range_order_cmp(*r2, *l2).reverse())
+            }
+            (Prefix::TwoSpecified(l1, l2), Prefix::TwoSpecified(r1, r2)) => {
+                l1.cmp(r1).then(l2.cmp(r2))
+            }
+            (Prefix::TwoSpecified(l1, l2), Prefix::ThreeRange(r1, r2, _)) => {
+                l1.cmp(r1).then(l2.cmp(r2))
+            }
+            (Prefix::ThreeRange(l1, l2, l3), Prefix::ThreeRange(r1, r2, r3)) => l1
+                .cmp(r1)
+                .then(l2.cmp(r2))
+                .then(Self::range_order_overwrap_cmp(*l3, *r3)),
+
+            // (Prefix::TwoRange(l, _), Prefix::OneAll(r)) => todo!(),
+            // (Prefix::TwoSpecified(_, _), Prefix::OneAll(_)) => todo!(),
+            // (Prefix::TwoSpecified(_, _), Prefix::TwoRange(_, _)) => todo!(),
+            // (Prefix::ThreeRange(_, _, _), Prefix::OneAll(_)) => todo!(),
+            // (Prefix::ThreeRange(_, _, _), Prefix::TwoRange(_, _)) => todo!(),
+            // (Prefix::ThreeRange(_, _, _), Prefix::TwoSpecified(_, _)) => todo!(),
+            _ => other.range_order(self).reverse(),
+        }
+    }
+
     fn point_cmp(x: u8, (l, r): (u8, u8)) -> Ordering {
         assert!(l <= r);
         if (l..=r).contains(&x) {
             Ordering::Equal
         } else if x < l {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
+    }
+
+    fn range_order_cmp(x: u8, (l, r): (u8, u8)) -> Ordering {
+        assert!(l <= r);
+        if (l..=r).contains(&x) {
+            Ordering::Equal
+        } else if x < l {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
+    }
+
+    fn range_order_overwrap_cmp(lhs: (u8, u8), rhs: (u8, u8)) -> Ordering {
+        assert!(lhs.0 <= lhs.1);
+        assert!(rhs.0 <= rhs.1);
+        if lhs.0 <= rhs.1 && rhs.0 <= lhs.1 {
+            Ordering::Equal
+        } else if lhs.1 < rhs.0 {
             Ordering::Less
         } else {
             Ordering::Greater
