@@ -3,7 +3,8 @@ resolver = "3"
 members = [
   "jelgen",
   "adif-reader",
-  "callfind",
+  "callfind/callfind-core",
+  "callfind/callfind",
   "qcgen",
   "schope",
   "common-qso",
@@ -17,7 +18,7 @@ authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
 
 [workspace.dependencies]
 adif-reader = { path = "./adif-reader" }
-callfind = { path = "./callfind" }
+callfind = { path = "./callfind/callfind" }
 common-qso = { path = "./common-qso" }
 schope = { path = "./schope" }
 

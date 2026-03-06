@@ -133,6 +133,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "callfind-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "quote",
+ "serde",
+ "serde_with",
+ "thiserror",
+]
+
+[[package]]
 name = "castaway"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
