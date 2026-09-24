@@ -4,15 +4,9 @@ Various amateur radio related libraries, tools, and codes by JL1HIS.
 
 ## Binary crates
 
+### `jastagen` - JASTA SSTV Activity Contest sheet generator
+
 ### `jelgen` - JARL eLog generator
-
-### `qcgen` - QSL card generator
-
-## Library crates
-
-### `callfind` - Utility for manipulatig callsigns and grid locator
-
-### `adif-reader` - Simple ADIF reader
 
 ## Internal crates
 

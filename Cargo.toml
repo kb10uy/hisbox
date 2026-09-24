@@ -1,12 +1,8 @@
 [workspace]
 resolver = "3"
 members = [
+  "jastagen",
   "jelgen",
-  "adif-reader",
-  "callfind/callfind-core",
-  "callfind/callfind-data",
-  "callfind/callfind",
-  "qcgen",
   "schope",
   "common-qso",
 ]
@@ -18,10 +14,8 @@ license = "MIT OR Apache-2.0"
 authors = ["Yū KOBAYASHI <kb10uy@kb10uy.org>"]
 
 [workspace.dependencies]
-adif-reader = { path = "./adif-reader" }
-callfind = { path = "./callfind/callfind" }
-callfind-core = { path = "./callfind/callfind-core" }
-callfind-data = { path = "./callfind/callfind-data" }
+adif-reader = { git = "https://github.com/kb10uy/adif-reader", version = "0.1.0" }
+callfind = { git = "https://github.com/kb10uy/callfind", version = "0.1.0" }
 common-qso = { path = "./common-qso" }
 schope = { path = "./schope" }
 
@@ -29,6 +23,7 @@ anyhow = "1.0.100"
 clap = { version = "4.5.54", features = ["derive"] }
 compact_str = "0.9.0"
 dialoguer = "0.12.0"
+encoding_rs = "0.8.35"
 itertools = "0.14.0"
 mlua = { version = "0.11.5", features = ["vendored", "lua54", "serde", "send"] }
 num = "0.4.3"

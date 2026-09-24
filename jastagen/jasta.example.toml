@@ -1,0 +1,28 @@
+# Entrant details for the JASTA SSTV Activity Contest summary sheet.
+# Everything here is copied onto the sheet verbatim; the log supplies the rest.
+
+contest_name = "JASTA SSTV activity contest"
+
+[entry]
+callsign = "JL1HIS"
+
+# "J" for a station in Japan, "S" for one outside it. A Japanese operator
+# working from abroad enters as "S". This also picks the summary language.
+category = "J"
+
+# Whether this is the first contest a summary has been submitted for.
+first_entry = false
+
+# "OM" or "YL".
+gender = "OM"
+
+# S, M, L or LL. Used only if the activity award is drawn.
+tshirt_size = "L"
+
+[operator]
+name = ""
+zip = ""
+address = ""
+email = ""
+license_class = ""
+power = ""
